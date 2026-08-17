@@ -1,0 +1,137 @@
+---
+title: "Getting started: Installation"
+subtitle: "Introduktion til Sundhedsdata"
+author: "Emily Johnson"
+date: last-modified
+lang: en
+format:
+  html:
+    toc: true
+    embed-resources: true
+  pdf:
+    embed-resources: true
+---
+
+## Before the first session
+
+You need to install the following and bring a working setup:
+
+## 1. Install R
+
+R is a free and open-source **software language** developed for statistical computing and graphics. It is a highly used language for research, econometrics, and data science work, and it's what we will use in this course and in the rest of the program.
+
+Download R software here: [mirrors.dotsrc.org/cran](https://mirrors.dotsrc.org/cran/). You should download the most recent one (4.6.1 as of 13th July 2026).
+
+The main homepage for R, including FAQs etc., is here: [r-project.org](https://www.r-project.org/).
+
+## 2. Install Positron
+
+Positron is the **integrated development environment (IDE)** we will use in this course. It was developed by the makers of RStudio, and has similar functionality and some add-ons. Positron was built off of VSCode, so if you've used VSCode you'll find it familiar. Positron is advantageous because it is built for data science work, so it is optimized for data processing, visualizing plots, and seeing the contents of your directories.
+
+Install positron here: [positron.posit.co/download](https://positron.posit.co/download).
+
+There are many bells and whistles in Positron which should make many different parts of your work easier.
+
+### What you will see when you open Positron
+
+![](../../assets/positron-panes-annotated.png){fig-align="center" width="100%" fig-alt="The Positron window with its four main panes outlined and labelled: Editor at the top left showing an open R script, Console at the bottom left showing code output, Session at the top right listing the objects in memory, and Plots / Help at the bottom right showing a figure."}
+
+The first time you open Positron, it finds your R installation on its own. The window is divided into four main panes:
+
+-   **Editor** (top left): where you write and save scripts and documents. Files open here as tabs.
+-   **Console** (bottom left): where code runs. You can type code directly here and press Enter, or send it from the editor.
+-   **Session** (top right): the Variables tab lists every object currently in memory, and the Data Explorer opens any dataset for browsing.
+-   **Plots / Help** (bottom right): figures appear here when you make them, and documentation appears when you look up a function.
+
+You do not need to learn these now — we walk through them in the first session.
+
+## 3. Install Quarto
+
+Quarto is a **file format** and **publishing platform**. It is like a combination of Word, PowerPoint, Jupyter Notebooks, R Markdown, and Overleaf all in one. All of the slides, demos, and assignments are in Quarto format, and you can also use Quarto to write papers, make websites, or produce documents which you can convert to pdf, word, powerpoint, or latex.
+
+Follow the steps here to install Quarto and make it available in Positron (or RStudio or VS Code): [quarto.org/docs/get-started](https://quarto.org/docs/get-started/).
+
+Quarto uses **markdown** syntax for formatting text and writing equations. There are many resources for writing markdown online, including the [Markdown cheatsheet](https://www.markdownguide.org/cheat-sheet/).
+
+### What a Quarto document looks like
+
+A Quarto document is a plain text file ending in `.qmd`, with three ingredients:
+
+1.  A **YAML header** at the top, between two `---` lines: the title, author, and output format.
+2.  **Text**, written in markdown: `##` makes a heading, `**bold**` makes bold text, `-` makes a bullet.
+3.  **Code chunks**, between ```` ```{r} ```` fences: R code that runs when the document is rendered, with its output placed directly below.
+
+Here's an example of a complete qmd document:
+
+```` markdown
+---
+title: "My first document"
+format: html
+---
+
+## A heading
+
+Some text about the analysis.
+
+```{{r}}
+1 + 1
+```
+````
+
+**Rendering** turns the `.qmd` file into a finished document. Press the **Render** button in Positron (or run `quarto render mydocument.qmd` in the terminal), and Quarto runs every code chunk from top to bottom in a fresh R session and produces an HTML file. Because the session is fresh, rendering is also the way to check that your code runs on its own — this matters later in the course, when you hand in assignments as rendered documents.
+
+## 4. Install Git
+
+Git is a **version control system**. It keeps a full history of every change you make to a file, so you can see what you changed and when, go back to an earlier version, and work on the same project from more than one machine. It is the standard tool for managing code in research and in industry, and we use it here to distribute the course materials to you.
+
+Install Git here: [git-scm.com/downloads](https://git-scm.com/downloads). On Windows, accept the default options in the installer. On macOS, you may already have Git; open the Terminal, type `git --version`, and install only if you get an error.
+
+Once Git is installed, open the Terminal in Positron and tell Git who you are. This is a one-time setup.
+
+```{bash}
+#| eval: false
+git config --global user.name "Your Name"
+git config --global user.email "your@email.com"
+```
+
+We will not use Git in depth in this course, and you do not need to know it well. You need it to keep the course materials up to date when I add something new (see section 6), and later in the course to track your own work.
+
+## 5. Install R packages
+
+We will use a number of **packages** in R to perform certain operations relevant for data management and visualization. A package is a bundle of functions that allow us to read data, modify it, save it, or use it in different models and plots.
+
+Run the code below to install the packages required for the course. You will only need to do this once after R is installed.
+
+```{r}
+#| eval: false
+install.packages(c("tidyverse", "arrow", "haven", "gtsummary",
+                   "GGally", "mosaicData"))
+```
+
+## 6. Get the course material
+
+All course material — slides, demos, exercises, and the datasets we work with — lives in a Git repository. The data you need for the course, and some of the course materials, are also available on Itslearning.
+
+Before the first session, download the copy of the course folder posted on itslearning and unzip it somewhere sensible on your machine (for example `Documents/sundhedsdata`). In the first session we will look at how Git keeps this folder up to date when I add new material each week.
+
+Assignments are submitted through itslearning.
+
+## Check that everything works
+
+Open Positron, paste the code below into the console, and press Enter. If the last line prints `"Everything works!"` with no errors above it, you are ready for the first session.
+
+```{r}
+#| eval: false
+library(tidyverse)
+library(arrow)
+library(haven)
+library(gtsummary)
+library(GGally)
+"Everything works!"
+```
+
+If you get an error instead, note which step it came from and bring it to the first session — the first thing we do is make sure everyone's setup runs.
+
+```{r}
+1 + 1
+```
