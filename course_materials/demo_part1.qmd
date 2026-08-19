@@ -125,6 +125,7 @@ library(arrow) # working with parquet files
 library(gtsummary)
 library(GGally) # correlation plots
 library(haven) # for working with .dta files
+library(downlit) # lets you click on a function in the code to see it's documentation in quarto html outputs
 ```
 
 ## Part 1: Data management

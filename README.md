@@ -4,7 +4,7 @@ An introduction to **data management and visualization in health economics** usi
 
 Over eight sessions you will build an analysis-ready dataset from Danish health registers, document and replicate your work, and explore and present the data through tables and figures.
 
-Teaching is in English. Folder and file names keep the Danish course terms — `lektion1/` … `lektion8/` for the eight sessions.
+Teaching is in Danish and English.
 
 ## Getting started
 
@@ -18,7 +18,7 @@ Course materials are Quarto (`.qmd`) files. Open one in Positron and render it t
 
 ## Data
 
-**The data is not in this repository.** Download the data files from itslearning and unzip them at the top level of this folder, so that the files land in `data/raw/` and `data/processed/`. The course materials expect exactly those paths.
+**The data is not in this repository.** Download the data files from itslearning and unzip them at the top level of this folder, so that the files land in `data/raw/` and `data/processed/`. 
 
 ## Course plan
 
