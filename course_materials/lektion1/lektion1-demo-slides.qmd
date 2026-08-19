@@ -172,7 +172,7 @@ Jorge Cham, *PHD Comics* — [phdcomics.com](https://phdcomics.com)
 
 ## Why focus on this?
 
-CLAUDE INSERT THE REDDIT SCREENSHOT HERE
+![](../../assets/reddit_disorganized_phd.png){fig-align="center" height="570px"}
 
 ## Good setup - Project organization {.smaller}
 
