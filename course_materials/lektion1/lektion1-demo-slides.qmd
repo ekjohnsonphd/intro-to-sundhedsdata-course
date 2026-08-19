@@ -162,13 +162,17 @@ Jorge Cham, *PHD Comics* — [phdcomics.com](https://phdcomics.com)
 
 :::: {.column width="62%"}
 ::: incremental
--   Root dir in code files
+-   File paths at top of script
 -   Analysis files render successfully
 -   Functions and loops: flexibility
 -   Efficiency: parquet and arrow
 :::
 ::::
 ::::::
+
+## Why focus on this?
+
+CLAUDE INSERT THE REDDIT SCREENSHOT HERE
 
 ## Good setup - Project organization {.smaller}
 
