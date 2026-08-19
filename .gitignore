@@ -66,3 +66,5 @@ course_materials/**/*.pdf
 
 # OS
 .DS_Store
+
+/.quarto/

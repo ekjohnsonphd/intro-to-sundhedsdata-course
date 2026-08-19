@@ -1,0 +1,14 @@
+# Marks the repo as a Quarto project.
+#
+# execute-dir: project makes every R chunk run with the working directory set
+# to this folder, no matter how deeply the .qmd is nested. So a lesson file can
+# say read.csv("data/processed/expbod_teaching.csv") and it resolves the same
+# way under `quarto render`, in Positron, and for a student who opened the
+# folder and hit Run. Without this, Quarto's default is the .qmd's own
+# directory, and course_materials/lektionN/ is two levels down.
+#
+# Note the one asymmetry: this sets the *execution* directory only. Markdown
+# image links (![](...)) and other paths Quarto resolves at render time stay
+# relative to the .qmd file, so those keep the ../../assets/ form.
+project:
+  execute-dir: project

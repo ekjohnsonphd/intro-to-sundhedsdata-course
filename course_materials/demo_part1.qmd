@@ -1,0 +1,644 @@
+---
+title: "Coding demo"
+subtitle: "Introduktion til Sundhedsdata"
+author: "Emily Johnson"
+date: last-modified
+lang: en
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: false
+    code-tools: true
+    code-link: true
+    df-print: paged
+    embed-resources: true
+    highlight-style: github
+execute:
+  echo: true
+  eval: true
+  warning: false
+  message: false
+---
+
+## Tour of Positron
+
+Positron has four main panes:
+
+-   **Editor** (top left): where you write and save scripts
+-   **Console** (bottom left): where code runs
+-   **Session** (top right): the variables tab shows every object currently in memory.
+-   **Plots / Help** (bottom right): figures and documentation about different functions
+
+Try running code by typing this in your Console and pressing enter, then by pressing "Run Cell":
+
+```{r}
+2 + 2
+```
+
+Code can be written and run in the console and in the editor. Any code that needs to be saved or rerun should be written in a file in the editor.
+
+## R basics
+
+The minimum you need to follow along in this course: objects, vectors, functions, and data frames.
+
+```{r}
+# everything in R is an object - assign with <-
+a <- 5
+a + 2
+```
+
+```{r}
+# a vector is a series of values of the same type
+ages <- c(34, 51, 28, 46)
+ages / 10
+```
+
+```{r}
+# functions take an input and return an output
+mean(ages)
+length(ages)
+```
+
+```{r}
+# a data frame is a table - each column is a vector
+people <- data.frame(
+    pnr = c("101", "102", "103", "104"),
+    age = ages
+)
+people
+```
+
+Every dataset in this course is a data frame: one row per observation, one column per variable. The registers are just very large versions of `people`.
+
+## The Quarto document
+
+This file is a Quarto document (`.qmd`). It has three compenents which you can see in the editor:
+
+1.  **YAML header** at the top, between the `---` fences: title, author, output format.
+2.  **Text** written in markdown: `##` makes a heading, `**bold**`, `-` makes a bullet.
+3.  **Code chunks** between ```` ```{r} ```` fences: R code that runs when the document renders and output shows below the chunk.
+
+Press **Render** (or run `quarto render demo.qmd` in the terminal) and Quarto will run every chunk in a fresh session and produce an HTML file. This is the way to check that your code runs successfully.
+
+## Getting the course material with Git
+
+The course material lives in a Git repository. You get a copy once:
+
+```{bash}
+#| eval: false
+git clone https://github.com/ekjohnsonphd/intro-to-sundhedsdata-course.git
+```
+
+Now you should see that you have a folder on your computer with all of the course materials as they exist on the remote. This is your local copy.
+
+And each week, from inside the folder, you fetch whatever is new from the remote:
+
+```{bash}
+#| eval: false
+git pull
+```
+
+By doing this, Git grabs any changes that others have made on the remote branch and puts them in your local copy.
+
+Now, we're going to add the data for the course to our local copy of the repository. If you haven't already done so, download and unzip the data files on Itslearning, and place them in the `data/` folder of this repository.
+
+## How we work in this course
+
+Each session is three hours: a lecture, then this demo, then time to work on your assignment with us in the room. The assignments are partly-completed `.qmd` files in the `code/` folder. You will work on them in the third hour, finish at home, and turn in the completed file with proof that it renders.
+
+The course folder is organized so you always know where things are:
+
+-   `course_materials/` — slides and walkthroughs, one folder per lesson
+-   `code/` — the assignments
+-   `data/raw/` and `data/processed/` — the datasets we work with
+
+## Setup
+
+Most functionality in R comes from **packages**, which are bundles of functions someone has written and shared. You install a package once with `install.packages()` (you did this in the installation guide), and load it with `library()` at the top of every script or document that uses it.
+
+```{r}
+#| label: setup
+library(tidyverse) # everything - data processing with dplyr, string management with stringr, and plotting with ggplot
+library(arrow) # working with parquet files
+library(gtsummary)
+library(GGally) # correlation plots
+library(haven) # for working with .dta files
+```
+
+## Part 1: Data management
+
+### Reading a register file
+
+We start with **BEF**, the population register which has one row per person and contains basic demographic information. The file is in Stata's `.dta` format, which `read_dta()` from the haven package reads into R.
+
+```{r}
+#| label: read-bef
+
+bef <- read_dta("data/raw/bef2019.dta") |> as.data.frame()
+```
+
+Notice the path: `data/raw/...`, written relative to the project root.
+
+### Looking at what you have
+
+The first step when reading a data file is to acquaint yourself with the data structure and contents. There are a few functions to do this:
+
+```{r}
+#| label: inspect-glimpse
+
+glimpse(bef)
+```
+
+`glimpse()` shows every column, its type, and the first few values.
+
+```{r}
+#| label: inspect-head
+
+head(bef)
+```
+
+`head()` shows the first rows of the table.
+
+```{r}
+#| label: inspect-str
+
+str(bef)
+```
+
+`str()` shows the underlying structure, including attributes that you don't see in '`glimpse()`.
+
+```{r}
+#| label: inspect-summary
+
+summary(bef)
+```
+
+`summary()` shows some summary statistics for numeric variables. Most useful for continuous data. It also shows the number of missing values per column.
+
+So far we know the file has 183,099 rows and 9 columns. We do not yet know what a row *is*.
+
+### (L2) Checking the granularity
+
+An important piece of information to know about your data is it's granularity - i.e. what each row of your data represents. This is how I check granularity when I have a guess about the keys of the data:
+
+```{r}
+#| label: check-granularity
+
+count(bef, pnr) |> filter(n > 1) #double check the granularity of the file - 1 row per pnr
+```
+
+Zero rows come back, which confirms it: `pnr` is unique, so BEF is a person-level file. If this returns some rows of data, then you've got more than one row per person and other variables would determine the granularity of the data.
+
+`count()` is also how you look at a categorical variable:
+
+```{r}
+#| label: count-koen
+
+# count() collapses the data to one row per value of the column
+count(bef, koen)
+```
+
+`koen` in this data is a categorical variable represented numerically. We will need to modify the dataset to make these readable.
+
+### Recoding a categorical variable
+
+To make `koen` readable we convert it to a **factor** — R's type for categorical data — and attach a label to each code. `factor()` builds the labelled version, and we add it to the existing dataframe using `mutate()`:
+
+```{r}
+#| label: recode-koen
+
+bef <- bef |>
+  mutate(koen = factor(koen, levels = c(1, 2), labels = c("Male", "Female")))
+
+# Writing to a column that already exists replaces it - the shape is unchanged
+count(bef, koen)
+```
+
+`count()` now shows the categories by name.
+
+### Selecting rows and columns
+
+Two of the most common operations on data are selecting rows and selecting columns. `filter()` keeps the rows that meet a condition:
+
+```{r}
+#| label: filter-rows
+
+# filter() drops rows and leaves the columns alone
+filter(bef, alder >= 65)
+```
+
+`select()` keeps only the columns you list, in the order you name them:
+
+```{r}
+#| label: select-columns
+
+# select() drops columns and leaves the rows alone
+select(bef, pnr, koen, alder)
+```
+
+Neither changes `bef` as written here. To keep a result, assign it to a name with `<-`.
+
+The verbs combine with the **pipe**, `|>` (or `%>%`), which passes the result of one step into the next. To keep only people of working age, with just the columns we need:
+
+```{r}
+#| label: working-age
+
+working_age <- bef |>
+  filter(alder >= 18, alder <= 64) |>
+  select(pnr, koen, alder)
+
+# dim() gives rows and columns - a quick way to see what a pipeline did
+print("Rows and columns in bef:")
+dim(bef)
+print("Rows and columns in working_age:")
+dim(working_age)
+```
+
+Read the pipe as "then": take `bef`, *then* keep rows with ages 18 to 64, *then* keep three columns. 118,977 of the 183,099 people are of working age. Two conditions inside one `filter()` both have to hold — a comma means "and". To create an "or" condition, use the pipe `|`.
+
+### Creating a new column
+
+`mutate()` also creates columns that do not exist yet. Anything on the right of the `=` is computed for every row; the name on the left is the new column. Here is a flag for people born in December:
+
+```{r}
+#| label: december-birthday
+
+bef <- bef |>
+  mutate(december_birthday = month(foed_dag) == 12, source = "bef")
+
+# A new name in mutate() adds a column - here two, so bef goes from 9 to 11
+dim(bef)
+
+count(bef, december_birthday)
+```
+
+To process dates, `month()` pulls the month out of a date, and `== 12` asks whether it is December, so the new column is `TRUE` or `FALSE` on every row. 15,511 people have a December birthday.
+
+We are not covering data processing in a lot of detail, but there are many resources available to work with strings, work with dates, add and transform columns, etc. I recommend using the cheatsheets and online documentation if you don't know how to perform a particular operation.
+
+### Classification keys
+
+For `koen`, we manually transformed numeric values into factors. In other cases, it may be more efficient to merge a codebook onto the data than to manually label each value. `pre_socio` is an example of this:
+
+```{r}
+#| label: read-ind
+
+ind <- read_dta("data/raw/ind2019.dta")
+
+# Each file format has its own function. For a CSV it is read_csv("data/raw/file.csv"),
+# and write_csv(ind, "data/processed/ind.csv") saves one back out.
+
+glimpse(ind)
+
+count(ind, pre_socio)
+```
+
+In this folder, we have a classification text file with the category labels. We will read this text file, and then join it on to the ind data to get the categories we want.
+
+```{r}
+#| label: read-classification
+
+# read_delim() reads any delimited text file - here the separator is a semicolon
+pre_socio_categories <- read_delim("data/raw/pre_socio_klassifikation.txt", delim = ";")
+
+pre_socio_categories
+```
+
+```{r}
+#| label: tidy-classification
+
+pre_socio_categories <- pre_socio_categories |>
+  select(pre_socio = START, labor = ANALYSE_KAT)
+
+# Alternative way to process when a file is all capital column names:
+# colnames(pre_socio_categories) <- tolower(colnames(pre_socio_categories))
+
+pre_socio_categories
+```
+
+Note that here we use `select()` to rename columns (old on the right, new on the left), not just to choose the columns we want. Register files often arrive in capitals, so renaming as you select keeps your own code consistent.
+
+### Attaching the key to the data
+
+Now let's try joining our categories to the income data. A `left_join` keeps all data on the left (`ind`), even if it doesn't match with the right hand dataset. For rows in `ind` without a match in `pre_socio_categories`, we would get missing values for the `labor` column.
+
+```{r}
+#| label: join-type-error
+#| error: true
+
+left_join(ind, pre_socio_categories, by = "pre_socio")
+```
+
+That fails because the codes are stored as text in one table and as numbers in the other. This is a very common error during a join.
+
+Let's change `pre_socio` to be a character in the categories file so that the merge will work:
+
+```{r}
+#| label: join-classification
+
+pre_socio_categories <- pre_socio_categories |>
+  mutate(pre_socio = as.character(pre_socio))
+
+ind <- ind |>
+  left_join(pre_socio_categories, by = "pre_socio")
+
+glimpse(ind)
+```
+
+Always check what a join did to your data:
+
+```{r}
+#| label: check-join
+
+count(ind, labor)
+```
+
+141,384 rows in, 141,384 rows out, and no `NA` in `labor`. A join that changes the row count, or produces unexpected `NA`s, is indicative of a problem. This is worth checking in all data management scripts.
+
+### Joining two registers
+
+Now let's join `bef`and `ind` together using `left_join()`:
+
+```{r}
+#| label: join-registers
+
+bef_ind <- bef |>
+  left_join(ind, by = "pnr")
+
+glimpse(bef_ind)
+```
+
+Same row count as BEF — a left join starts from the left table and never drops its rows. But IND only has 141,384 people, so the rest got `NA`:
+
+```{r}
+#| label: join-missing
+
+sum(is.na(bef_ind$perindkialt_13))
+```
+
+41,715 people have no income record. Before deciding whether that is a problem, look at who they are:
+
+```{r}
+#| label: who-is-missing
+
+bef_ind |>
+  filter(is.na(perindkialt_13)) |>
+  count(alder < 18)
+```
+
+40,786 of them are children, who do not appear in the income register. This is the join check from before with one more step: when a join produces `NA`s, find out *which* rows they landed on before deciding what to do about them. Here the missingness makes sense, so we keep the table as it is.
+
+#### Choosing the type of join
+
+Different joins retain different populations. `left_join()` is the most used type of join, because you don't reduce the size of your data when the rows to join don't exist in the second data. `inner_join()` keeps only the people found in *both* tables, so the non-matching rows are dropped instead of filled with `NA`:
+
+```{r}
+#| label: join-types
+
+# left_join keeps everyone in bef, whether or not they are in ind
+print("Rows from a left join:")
+nrow(left_join(bef, ind, by = "pnr"))
+
+# inner_join keeps only the people who appear in both tables
+print("Rows from an inner join:")
+nrow(inner_join(bef, ind, by = "pnr"))
+
+# anti_join is the opposite - only the people in bef with no match in ind
+# this is most useful for troubleshooting, or if you have a dataset of "exclusions" to join to your main analysis df
+print("Rows from an anti join:")
+nrow(anti_join(bef, ind, by = "pnr"))
+```
+
+The inner join returns 141,384 rows, the size of IND, and the anti join returns the 41,715 people it dropped. Join functions do not throw a warning when they drop rows, so it's always important to verify that you're not dropping data without realizing it.
+
+### Aggregation and summarisation
+
+You'll often need to group data together to produce summary statistics - e.g. grouping data by sex or disease state and reporting statistics. In `dplyr` syntax, you use `group_by()` to declare the variables you want to stratify by in aggregation, and `summarise()` to calculate your listed statistics:
+
+```{r}
+#| label: aggregate-income
+
+ind |>
+  group_by(labor) |>
+  summarise(mean_income = mean(perindkialt_13), n = n())
+```
+
+One row per labour-market category, with the average income and the number of people in each. `n()` counts the rows in each group, which is often necessary to use as a denominator for a rate estimation.
+
+It is worth seeing what each of the two verbs does on its own. `group_by()` does not change the data at all — it attaches a note to the table saying which column to split on, and everything after it in the pipeline respects that note:
+
+```{r}
+#| label: what-group-by-does
+
+grouped_ind <- ind |> group_by(labor)
+
+# Same rows and columns as before - group_by() only adds the grouping
+print("Rows and columns before and after group_by():")
+dim(ind)
+dim(grouped_ind)
+
+# What has changed is that the data now carries a grouping
+print("Grouping column:")
+group_vars(grouped_ind)
+print("Number of groups:")
+n_groups(grouped_ind)
+```
+
+`summarise()` changes the data shape: it takes those 8 groups and returns one row for each, so 141,384 rows collapse to 8. Any column you do not name in `summarise()` is gone.
+
+### Pivoting: reshaping a table
+
+Now the same summary split by sex. Sex lives in BEF, which is why we joined — group `bef_ind` by both columns:
+
+```{r}
+#| label: income-by-sex
+
+income_by_sex <- bef_ind |>
+  filter(!is.na(perindkialt_13)) |>
+  group_by(labor, koen) |>
+  summarise(mean_income = mean(perindkialt_13), .groups = "drop")
+
+# Grouping by two columns gives one row per combination - 8 categories x 2 sexes
+dim(income_by_sex)
+
+income_by_sex
+```
+
+(The `filter()` drops the children with no income record; `.groups = "drop"` just tells `summarise()` not to leave the result grouped.)
+
+This is a **long** table: one row per labour-category-and-sex combination. Often for final reporting though, you want **wide** data - e.g. one row per labor category, and a separate column for each sex. `pivot_wider()` spreads one column's categories out into new columns:
+
+```{r}
+#| label: pivot-wider
+
+income_by_sex <- income_by_sex |>
+  pivot_wider(names_from = koen, values_from = mean_income)
+
+# 16 rows become 8 - the same numbers, two per row instead of one
+dim(income_by_sex)
+
+income_by_sex
+```
+
+`names_from` defines which column's values become the new column names. `values_from` defines what fills the cells. The reverse operation is `pivot_longer()`, which stacks columns back into rows:
+
+```{r}
+#| label: pivot-longer
+
+income_by_sex <- income_by_sex |>
+  pivot_longer(
+    cols = c(Male, Female),
+    names_to = "koen",
+    values_to = "mean_income"
+  )
+
+income_by_sex
+```
+
+We are back to the 16-row table we started from. `cols` names the columns being stacked, `names_to` is where their column names go, and `values_to` is where their contents go. Plotting is the usual reason to go this direction.
+
+### Functions and loops
+
+There are many times you want to perform the same operation on the data multiple times. For example, let's say we want to see the same grouped data aggregation by age decade, and not just sex. Instead of writing a similar line of code again with one thing changed, leading to long, repetitive, ugly code, we can write a function:
+
+```{r}
+#| label: define-function
+
+mean_income_by <- function(data, group) {
+  data |>
+    filter(!is.na(perindkialt_13)) |>
+    group_by(.data[[group]]) |>
+    summarise(mean_income = mean(perindkialt_13), n = n())
+}
+```
+
+`function(data, group)` indicates that we need 2 inputs to our function. The body is the pipeline we already had, with the grouping column swapped for the placeholder `group`.
+
+The one new piece is `.data[[group]]`. We give the column name to the function as text — `"labor"` rather than `labor` — because at the time we write the function we do not know which column it will be. `.data` means "the dataset that was passed in", and `[["labor"]]` picks the column of that name out of it, the same way `bef[["alder"]]` picks a column out of `bef`. (Writing functions around dplyr is covered in more detail in [R4DS chapter 25](https://r4ds.hadley.nz/functions.html)).
+
+Now re-aggregating along a different dimension is one line. Age decades instead of sex:
+
+```{r}
+#| label: use-function
+
+bef_ind <- bef_ind |>
+  mutate(age_decade = floor(alder / 10) * 10)
+
+# The grouping column goes in as text, in quotes
+mean_income_by(bef_ind, "age_decade")
+```
+
+Once the work is in a function, you can run it over several inputs at once. `lapply()` takes a vector and a function, applies the function to each element in turn, and returns the results in a list. In register work the classic use is looping over years — one file per year, same processing for each. Here it is over the three grouping columns:
+
+```{r}
+#| label: lapply-groups
+
+results <- lapply(c("koen", "labor", "age_decade"),
+                  function(group_col) mean_income_by(bef_ind, group_col))
+
+results
+```
+
+Because the function already takes the column name as text, each element of the vector goes straight in as `group_col`. The result is a list of three tables, which you reach with double brackets — `results[[2]]` is the one grouped by `labor`.
+
+### Arrow and parquet — why and how
+
+When you work with register data you often encounter very large data files. To manage the size of files you store, and to make code run more efficiently when the data is large, there are two tools:
+
+-   **Parquet:** a type of file that is optimized for storing large data. Parquet files use headers to store metadata, store data in partitions, and have other characteristics under the hood that make data much smaller on disc, and easy to read.
+-   **Arrow:** a library, in R and Python, which reads in parquet files. Arrow can read *blueprints* of your data without pulling the whole file into memory, which lets you perform some operations on the data while it's still on disc. For example, you can use Arrow to read many parquet files of the same shape at once, and you can also use it to read a file and filter on a column in the data (for example, only read the data for rows where age \> 18).
+
+Together these tools make working with big data much easier, and much nicer for other people sharing the computing resources.
+
+```{r}
+#| label: csv-vs-parquet-size
+
+# Get the file size in megabits of our csv of data
+print("Data size on disc as a CSV:")
+file.size("data/processed/expbod_teaching.csv") / 1e6
+
+# Get the file size in megabits of the parquet data
+# For the parquet files - sum over partitions
+print("Data size on disc as partitioned parquet files:")
+sum(file.size(list.files("data/processed/expbod_teaching_parquet/", recursive = TRUE, full.names = TRUE))) / 1e6
+```
+
+#### Partitioning data with folders
+
+Parquet files are written out in partitions. This is useful for a few reasons. If you only need to work with a subset of your data, you can read the data in and filter it more efficiently than needing to read everything into memory, just to use a subset. You can also see the contents of the data more easily, without reading in any data.
+
+```{r}
+#| label: partition-pruning
+
+# When I wrote the "expbod_teaching_parquet" data, this is how I wrote it to have the data partitions:
+# expbod_data %>%
+#   group_by(disease, sex) %>%
+#   write_dataset("data/processed/expbod_teaching_parquet/")
+
+# With the CSV data - read the data into memory and filter to males with depression ages 30 to 34
+t1 <- Sys.time()
+data_csv <- read.csv("data/processed/expbod_teaching.csv")
+data_csv <- data_csv %>%
+  filter(sex == "Male" & age_cat == "18to39" & disease == "depression")
+t2 <- Sys.time()
+
+sprintf("CSV filtering time: %f seconds",difftime(t2,t1))
+
+# Now with Parquet - do the same operation
+t3 <- Sys.time()
+data_parquet <- open_dataset("data/processed/expbod_teaching_parquet/") |>
+  filter(sex == "Male" & age_cat == "18to39" & disease == "depression")
+# Notice that some filters are in the folders, and others are not
+
+t4 <- Sys.time()
+data_parquet <- collect(data_parquet)
+t5 <- Sys.time()
+
+sprintf("Parquet read data and filter: %f seconds",difftime(t4,t3))
+sprintf("%f seconds to pull data into memory",difftime(t5,t4))
+```
+
+Arrow is efficient because of something called "lazy evaluation". When you read a parquet file using arrow, the system only reads the *blueprint* of the data. This is useful because you can spot errors in the processing fast, and you can get a sense of some of the data shape without writing code yet.
+
+```{r}
+data_parquet <- open_dataset("data/processed/expbod_teaching_parquet/")
+
+# The data is still on disc. However, you can see some metadata about the data:
+schema(data_parquet)
+
+# Note that if you use the head command, you won't actually see rows of data yet.
+head(data_parquet)
+
+# Now let's filter again.
+data_parquet <- data_parquet |>
+  filter(sex == "Male" & age_cat == "18to39" & disease == "depression")
+
+# Arrow can't do some things lazily, and will ask you instead to "collect" the data. This means to pull the data into memory.
+count(data_parquet, variable)
+
+# Now let's collect the data. Then it will look like a regular data.frame in R.
+data_parquet <- collect(data_parquet)
+
+head(data_parquet)
+count(data_parquet, variable)
+
+# You can see which functions Arrow does lazily vs. which ones require pulling the data into memory here:
+list_compute_functions()
+```
+
+## Documenting the data: the data dictionary
+
+One of the most useful things you can leave yourself in an analysis project is a **data dictionary**. I build data dictionaries at the same time I write data management scripts. A data dictionary defines how the variables you're using are constructed and what data they come from. This is useful as a reference for yourself in the future, and for writing a methods section of a paper when you get to that point.
+
+Our dictionary is in `data/processed/analysis_file_dictionary.csv`, and it has four columns:
+
+| Column | What it holds |
+|------------------------------------|------------------------------------|
+| `column` | The variable name, exactly as it appears in the data |
+| `type` | Its storage type: character, factor, numeric, integer, date |
+| `source` | The register(s) it came from |
+| `description` | What it means, what its values are, and any decision taken in making it |
+
+As you collaborate with others (or use AI tools for analytical projects), the data dictionary becomes more important because it defines the structure of your data outside of your coding decisions.
