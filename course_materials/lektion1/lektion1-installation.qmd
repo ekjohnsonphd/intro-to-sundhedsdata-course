@@ -166,7 +166,11 @@ Run the code below to install the packages required for the course. You will onl
 ```{r}
 #| eval: false
 install.packages(c("tidyverse", "arrow", "haven", "gtsummary",
-                   "GGally", "mosaicData"))
+                   "GGally", "mosaicData",
+                   # downlit and xml2 turn every function name in a rendered
+                   # document into a link to its help page, so you can click
+                   # a function in the demos to read what it does
+                   "downlit", "xml2"))
 ```
 
 ## Check that everything works
