@@ -1,0 +1,89 @@
+# SDU / DaCHE brand for Quarto.
+#
+# Colours are SDU's official web hex values from the SDU design guide
+# (designguide.sdu.dk) and were cross-checked against the live stylesheet on
+# sdu.dk, where all eight non-neutral values appear verbatim. The print CMYK
+# variants (#ECD7A3 sand, #866243 brown) are deliberately NOT used here.
+#
+# Quarto picks this file up automatically for every .qmd in the project
+# (requires Quarto >= 1.6). Nothing needs to be added to _quarto.yml.
+
+meta:
+  name:
+    short: DaCHE
+    full: DaCHE – Dansk Center for Sundhedsøkonomi / Danish Centre for Health Economics, Syddansk Universitet
+  link:
+    home: https://www.sdu.dk/en/forskning/dache
+    linkedin: https://www.linkedin.com/company/dache-sdu
+    bluesky: https://bsky.app/profile/dache-sdu.bsky.social
+
+color:
+  palette:
+    # SDU's ten brand colours, named after the "apple tree cycle" palette.
+    # Danish names in comments; keys use the Bootstrap/Sass equivalents so the
+    # semantic mappings below stay readable.
+    white: "#FFFFFF"        # Hvid
+    black: "#000000"         # Sort
+    sand: "#DDCBA4"          # Sand (PMS 468)
+    brown: "#7A6040"         # Brun (PMS 7505)
+    pink: "#E1BBB4"          # Rosa (PMS 7605)
+    red: "#D05A57"           # Rød (PMS 2032)
+    orange: "#E07E3C"        # Orange (PMS 7577)
+    yellow: "#F2C75C"        # Gul (PMS 141)
+    green: "#789D4A"         # Grøn (PMS 576)
+    light-green: "#AEB862"   # Lys grøn (PMS 2302)
+
+  foreground: black
+  background: white
+  primary: red         # SDU marketing primaries are Sort, Hvid, Sand and Rød
+  secondary: brown
+  tertiary: sand
+  success: green       # Quarto callout-tip
+  info: light-green    # Quarto callout-note; SDU has no blue or teal
+  warning: orange      # Quarto callout-warning
+  danger: red          # Quarto callout-important; same red as primary by design
+
+typography:
+  fonts:
+    - family: DM Sans
+      # Stand-in for SDU's LL Brown Pro (Lineto), which is commercially
+      # licensed and not distributable in this repo. DM Sans is the closest
+      # open alternative — same geometric-humanist character.
+      source: google
+      weight: [400, 500, 700]
+      style: [normal, italic]
+
+    - family: JetBrains Mono
+      # Not part of the SDU identity — chosen for this course because code is
+      # on screen constantly and it has a clear 0/O and 1/l/I.
+      source: google
+      weight: [400, 700]
+
+    # SDU's secondary typeface is Lyon Text (Commercial Type), also licensed.
+    # Uncomment this and set `base: Source Serif 4` for prose-heavy handouts.
+    # - family: Source Serif 4
+    #   source: google
+    #   weight: [400, 600]
+    #   style: [normal, italic]
+
+  base: DM Sans
+  headings: DM Sans
+  monospace: JetBrains Mono
+
+# Logos are commented out because the files are not in this repo and a broken
+# path fails the render. To enable: download the SDU logo from
+# designguide.sdu.dk, put the files in a logos/ folder next to this file, and
+# uncomment.
+#
+# logo:
+#   images:
+#     header:
+#       path: logos/sdu-logo.svg
+#       alt: Syddansk Universitet logo.
+#     header-white:
+#       path: logos/sdu-logo-white.svg
+#       alt: Syddansk Universitet logo.
+#   small: header
+#   medium:
+#     light: header
+#     dark: header-white
