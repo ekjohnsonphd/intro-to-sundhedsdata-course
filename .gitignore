@@ -48,11 +48,10 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 
-# Quarto render outputs (rendered HTML/PDF is distributed via itslearning, not versioned)
+# Quarto render outputs
 .quarto/
 *_files/
 *.html
-course_materials/**/*.pdf
 
 # LaTeX intermediates left behind by failed PDF renders
 *.aux
