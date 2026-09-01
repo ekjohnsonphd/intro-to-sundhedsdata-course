@@ -67,3 +67,7 @@ rsconnect/
 .DS_Store
 
 /.quarto/
+
+# Course data — students download it from itslearning and unzip it here.
+# Never versioned: it is large, and the repo is not the distribution channel.
+/data/
