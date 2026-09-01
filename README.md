@@ -25,7 +25,7 @@ Course materials are Quarto (`.qmd`) files. Open one in Positron and render it t
 Autumn 2026. All sessions are in room **U2**.
 
 | \# | Session | Date and time | Topics | Deliverable |
-|--------------|--------------|------------------|--------------|---------------|
+|---------------|---------------|---------------|---------------|---------------|
 | 1 | Introduction | Tue 1 Sep, 11:00–14:00 | Intro to the course; overview of Danish health data; types of datasets; intro to R |  |
 | 2 | Socioeconomics | Tue 8 Sep, 11:00–14:00 | Sex, age, geography/region, income, education | Assignment 1 (started) |
 | 3 | Costs | Tue 15 Sep, 11:00–14:00 | Hospital, health-insurance, and pharmaceutical costs | Assignment 1 (continued) |
