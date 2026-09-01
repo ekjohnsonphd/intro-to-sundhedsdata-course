@@ -16,7 +16,7 @@ format:
 include-in-header:
   text: |
     <style>
-    .press-collage { position: relative; width: 92%; margin: 0 auto; aspect-ratio: 4 / 3; }
+    .press-collage { position: relative; width: 66%; margin: 0 auto; aspect-ratio: 4 / 3; }
     .press-collage img { position: absolute; box-shadow: 0 2px 8px rgba(0,0,0,0.35); border: 1px solid #ddd; }
     </style>
 ---
@@ -74,7 +74,7 @@ Kort introduction til hver datakilde med et view på hjemmesiden
 
 ![](../../assets/dst-mikrodata-eksempel-tabel.png){fig-align="center" width="80%"}
 
-## GDPR
+## GDPR {.smaller}
 
 - Man skal altid have hjemmel til at behandle personoplysninger
 - Hvad betyder det ?
