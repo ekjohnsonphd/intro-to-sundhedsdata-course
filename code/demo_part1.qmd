@@ -647,7 +647,7 @@ list_compute_functions()
 
 One of the most useful things you can leave yourself in an analysis project is a **data dictionary**. I build data dictionaries at the same time I write data management scripts. A data dictionary defines how the variables you're using are constructed and what data they come from. This is useful as a reference for yourself in the future, and for writing a methods section of a paper when you get to that point.
 
-Our dictionary is in `data/processed/analysis_file_dictionary.csv`, and it has four columns:
+Our dictionary is in `data/processed/202609/analysis_file_dictionary.csv`, and it has four columns:
 
 | Column | What it holds |
 |------------------------------------|------------------------------------|
