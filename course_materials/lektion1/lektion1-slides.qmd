@@ -1,0 +1,95 @@
+---
+title: "Lektion 1: Introduktion"
+subtitle: "Introduktion til Sundhedsdata"
+author: "Kim Rose Olsen"
+date: last-modified
+lang: en
+format:
+  revealjs:
+    theme: default
+    slide-number: true
+    incremental: false
+    embed-resources: true
+    highlight-style: github
+    code-line-numbers: true
+    fig-align: center
+include-in-header:
+  text: |
+    <style>
+    .press-collage { position: relative; width: 92%; margin: 0 auto; aspect-ratio: 4 / 3; }
+    .press-collage img { position: absolute; box-shadow: 0 2px 8px rgba(0,0,0,0.35); border: 1px solid #ddd; }
+    </style>
+---
+
+## Om faget
+
+- Gennemgå lektionsplanen kort
+
+## Indhold i lektion 1
+
+- Introduktion til datakilder
+- Data etik og GDPR
+- Typer af data
+- Introdukion til
+  - Positron og
+  - R
+
+## Sundhedsdata
+
+<div class="press-collage">
+<img src="../../assets/sds-unikke-registre-artikel.png" style="left:0.00%; top:23.61%; width:54.26%; height:32.48%;">
+<img src="../../assets/phdcup-2022-vinder-artikel.png" style="left:44.91%; top:31.06%; width:54.26%; height:25.10%;">
+<img src="../../assets/guldmine-forskere-artikel.png" style="left:1.66%; top:53.92%; width:45.46%; height:33.22%;">
+<img src="../../assets/verdens-bedste-sundhedsdata-artikel.png" style="left:47.98%; top:1.48%; width:36.85%; height:32.48%;">
+<img src="../../assets/novonordiskfonden-sundhedsdata-artikel.png" style="left:37.91%; top:70.53%; width:38.63%; height:26.30%;">
+<img src="../../assets/digitech-sundhedsdata-verdensklasse-artikel.png" style="left:65.25%; top:57.32%; width:33.91%; height:26.42%;">
+</div>
+
+## Datakilder {.smaller}
+
+- [DST Statistikbanken](https://www.statistikbanken.dk/statbank5a/default.asp?w=1440)
+- [DST microdata](https://www.dst.dk/da/TilSalg/data-til-forskning)
+- [Sundhedsdatabanken](https://sundhedsdatabank.dk/)
+- [Sundhedsdatastyrelsens mikrodata](https://sundhedsdatastyrelsen.dk/data-og-registre/forskerservice)
+- [SundK](https://www.sundk.dk/kliniske-kvalitetsdatabaser/)
+- [SHARE](https://share-eric.eu/)
+- [Sundhedsprofilerne](https://www.danskernessundhed.dk/)
+- Kohortedata
+  - Østerbroundersøgelsen
+  - Inter99
+  - VIA
+
+::: {.notes}
+Kort introduction til hver datakilde med et view på hjemmesiden
+:::
+
+## DST mikrodata – registre i dette fag
+
+- Befolkningsregisteret
+- Indkomstregistret
+- Uddannelsesregistret
+- Landspatientregisteret og DRG
+- Sygesikringsregistret
+- Lægemiddelregistret
+
+![](../../assets/dst-mikrodata-eksempel-tabel.png){fig-align="center" width="80%"}
+
+## GDPR
+
+- Man skal altid have hjemmel til at behandle personoplysninger
+- Hvad betyder det ?
+- Personoplysninger skal behandles sikkert.
+- Need to know
+- Hvis man søger godkendelse til et formål, skal man søge på ny hvis formålet ændrer sig
+- Forkerte oplysninger slettes
+- Når man er færdig med sit projekt skal data slettes eller afleveres til Rigsarkivet
+- Der er også noget der hedder OpenScience
+
+## Typer af analysedata
+
+- Cross section
+- Time series data
+- Paneldata / longitudinelle data
+- Event / indexdata
+- Survivaldata
+- [LINK](../../resources/data%20typer.xlsx)

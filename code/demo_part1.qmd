@@ -70,7 +70,7 @@ people <- data.frame(
 people
 ```
 
-Every dataset in this course is a data frame: one row per observation, one column per variable. The registers are just very large versions of `people`.
+Every dataset in this course is a data frame. The registers are just very large versions of `people`.
 
 ## The Quarto document
 
@@ -125,8 +125,21 @@ library(arrow) # working with parquet files
 library(gtsummary)
 library(GGally) # correlation plots
 library(haven) # for working with .dta files
-library(downlit) # lets you click on a function in the code to see it's documentation in quarto html outputs
 ```
+
+Packages should always be loaded at the top of the analysis file. This should also be where you set your filepaths:
+
+```{r}
+#| label: filepath-setup
+raw_data_dir <- "data/raw"
+processed_data_dir <- "data/processed/202609"
+
+# If we had outputs to save for this script:
+# output_dir <- "results/202609"
+
+```
+
+Loading your filepaths at the top of the script means that a person reading your code can see all of the inputs and outputs of the analysis in one place. It also means that when you need to update a data source, you only need to update one line.
 
 ## Part 1: Data management
 
@@ -137,7 +150,7 @@ We start with **BEF**, the population register which has one row per person and 
 ```{r}
 #| label: read-bef
 
-bef <- read_dta("data/raw/bef2019.dta") |> as.data.frame()
+bef <- read_dta(paste0(raw_data_dir,"/bef2019.dta")) |> as.data.frame()
 ```
 
 Notice the path: `data/raw/...`, written relative to the project root.
@@ -286,10 +299,10 @@ For `koen`, we manually transformed numeric values into factors. In other cases,
 ```{r}
 #| label: read-ind
 
-ind <- read_dta("data/raw/ind2019.dta")
+ind <- read_dta(paste0(raw_data_dir,"/ind2019.dta"))
 
-# Each file format has its own function. For a CSV it is read_csv("data/raw/file.csv"),
-# and write_csv(ind, "data/processed/ind.csv") saves one back out.
+# Each file format has its own function. For a CSV it is read_csv("file.csv"),
+# and write_csv(ind, "ind.csv") saves one back out.
 
 glimpse(ind)
 
@@ -302,7 +315,7 @@ In this folder, we have a classification text file with the category labels. We 
 #| label: read-classification
 
 # read_delim() reads any delimited text file - here the separator is a semicolon
-pre_socio_categories <- read_delim("data/raw/pre_socio_klassifikation.txt", delim = ";")
+pre_socio_categories <- read_delim(paste0(raw_data_dir,"/pre_socio_klassifikation.txt"), delim = ";")
 
 pre_socio_categories
 ```
@@ -558,12 +571,13 @@ Together these tools make working with big data much easier, and much nicer for 
 
 # Get the file size in megabits of our csv of data
 print("Data size on disc as a CSV:")
-file.size("data/processed/expbod_teaching.csv") / 1e6
+file.size(paste0(processed_data_dir,"/expbod_teaching.csv")) / 1e6
 
 # Get the file size in megabits of the parquet data
 # For the parquet files - sum over partitions
 print("Data size on disc as partitioned parquet files:")
-sum(file.size(list.files("data/processed/expbod_teaching_parquet/", recursive = TRUE, full.names = TRUE))) / 1e6
+sum(file.size(list.files(paste0(processed_data_dir, "expbod_teaching_parquet/"), 
+  recursive = TRUE, full.names = TRUE))) / 1e6
 ```
 
 #### Partitioning data with folders
@@ -576,11 +590,11 @@ Parquet files are written out in partitions. This is useful for a few reasons. I
 # When I wrote the "expbod_teaching_parquet" data, this is how I wrote it to have the data partitions:
 # expbod_data %>%
 #   group_by(disease, sex) %>%
-#   write_dataset("data/processed/expbod_teaching_parquet/")
+#   write_dataset(paste0(processed_data_dir,"/expbod_teaching_parquet/"))
 
 # With the CSV data - read the data into memory and filter to males with depression ages 30 to 34
 t1 <- Sys.time()
-data_csv <- read.csv("data/processed/expbod_teaching.csv")
+data_csv <- read.csv(paste0(processed_data_dir,"/expbod_teaching.csv"))
 data_csv <- data_csv %>%
   filter(sex == "Male" & age_cat == "18to39" & disease == "depression")
 t2 <- Sys.time()
@@ -589,7 +603,7 @@ sprintf("CSV filtering time: %f seconds",difftime(t2,t1))
 
 # Now with Parquet - do the same operation
 t3 <- Sys.time()
-data_parquet <- open_dataset("data/processed/expbod_teaching_parquet/") |>
+data_parquet <- open_dataset(paste0(processed_data_dir,"/expbod_teaching_parquet/")) |>
   filter(sex == "Male" & age_cat == "18to39" & disease == "depression")
 # Notice that some filters are in the folders, and others are not
 
@@ -604,7 +618,7 @@ sprintf("%f seconds to pull data into memory",difftime(t5,t4))
 Arrow is efficient because of something called "lazy evaluation". When you read a parquet file using arrow, the system only reads the *blueprint* of the data. This is useful because you can spot errors in the processing fast, and you can get a sense of some of the data shape without writing code yet.
 
 ```{r}
-data_parquet <- open_dataset("data/processed/expbod_teaching_parquet/")
+data_parquet <- open_dataset(paste0(processed_data_dir,"/expbod_teaching_parquet/"))
 
 # The data is still on disc. However, you can see some metadata about the data:
 schema(data_parquet)

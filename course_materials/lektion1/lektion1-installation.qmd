@@ -10,6 +10,11 @@ format:
     embed-resources: true
   pdf:
     embed-resources: true
+    include-in-header:
+      text: |
+        % wrap long code lines (e.g. the Homebrew install command) in the PDF
+        \usepackage{fvextra}
+        \fvset{breaklines=true, breakanywhere=true}
 ---
 
 ## Before the first session
@@ -167,6 +172,9 @@ Run the code below to install the packages required for the course. You will onl
 #| eval: false
 install.packages(c("tidyverse", "arrow", "haven", "gtsummary",
                    "GGally", "mosaicData",
+                   # downlit and xml2 turn every function name in a rendered
+                   # document into a link to its help page, so you can click
+                   # a function in the demos to read what it does
                    "downlit", "xml2"))
 ```
 
