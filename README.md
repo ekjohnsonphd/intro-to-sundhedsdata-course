@@ -29,12 +29,12 @@ Autumn 2026. All sessions are in room **U2**.
 | 1 | Introduction | Tue 1 Sep, 11:00–14:00 | Intro to the course; overview of Danish health data; types of datasets; intro to R |  |
 | 2 | Socioeconomics | Tue 8 Sep, 11:00–14:00 | Sex, age, geography/region, income, education | Assignment 1 (started) |
 | 3 | Costs | Tue 15 Sep, 11:00–14:00 | Hospital, health-insurance, and pharmaceutical costs | Assignment 1 (continued) |
-| 4 | Presentations and the final dataset | Tue 22 Sep, 11:00–14:00 | Presentations of assignment 1; peer code review; merging data, replication and documentation |  |
+| 4 | Presentations and the final dataset | Tue 22 Sep, 11:00–14:00 | Presentations of assignment 1; peer code review; merging data, replication and documentation | Assignment 1 due |
 | 5 | EDA – Costs | Tue 29 Sep, 11:00–14:00 | Good workflows; histograms and box-whisker plots; correlation matrices; "Table 1" and grouped "Table 1" | Assignment 2 (started) |
-| 6 | EDA – Socioeconomics and morbidity | Tue 6 Oct, 11:00–14:00 | Flow charts; histograms; box-whiskers; heat maps; correlation matrices; scatterplots; maps of Denmark | Assignment 2 (continued) |
+| 6 | EDA – Socioeconomics and morbidity | Tue 6 Oct, 11:00–14:00 | Flow charts; histograms; box-whiskers; heat maps; correlation matrices; scatterplots; maps of Denmark | Assignment 2 due |
 | — | *Autumn break* | Tue 13 Oct | — |  |
 | 7 | Replication | Fri 23 Oct, 09:00–12:00 | Replication and documentation; peer code review; extra time for assignment 3 | Assignment 3 |
-| 8 | Applications and presentations | Thu 29 Oct, 12:00–15:00 | Applied examples; distributional models; real-world-evidence costs; the "red herring"; ML prediction; presentations of assignments 2 and 3 |  |
+| 8 | Applications and presentations | Thu 29 Oct, 12:00–15:00 | Applied examples; distributional models; real-world-evidence costs; the "red herring"; ML prediction; presentations of assignments 2 and 3 | Assignment 3 due |
 
 Material is added to this repository as the term goes on, so pull before each session.
 
