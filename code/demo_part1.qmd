@@ -280,7 +280,7 @@ Read the pipe as "then": take `bef`, *then* keep rows with ages 18 to 64, *then*
 #| label: december-birthday
 
 bef <- bef |>
-  mutate(december_birthday = month(foed_dag) == 12, source = "bef")
+  mutate(december_birthday = ifelse(month(foed_dag) == 12, "December bday", "Other bday month"), source = "bef")
 
 # A new name in mutate() adds a column - here two, so bef goes from 9 to 11
 dim(bef)
@@ -328,6 +328,10 @@ pre_socio_categories <- pre_socio_categories |>
 
 # Alternative way to process when a file is all capital column names:
 # colnames(pre_socio_categories) <- tolower(colnames(pre_socio_categories))
+
+# You can also use rename(pre_socio = START, labor = ANALYSE_KAT) if you don't want 
+# to specify every variable in select() - for example, when you have 10 columns 
+# and only want to change 1 or 2
 
 pre_socio_categories
 ```
@@ -550,7 +554,8 @@ Once the work is in a function, you can run it over several inputs at once. `lap
 #| label: lapply-groups
 
 results <- lapply(c("koen", "labor", "age_decade"),
-                  function(group_col) mean_income_by(bef_ind, group_col))
+                  function(group_col) mean_income_by(bef_ind, group_col)) %>% 
+                    bind_rows()
 
 results
 ```

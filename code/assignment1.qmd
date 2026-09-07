@@ -1,0 +1,221 @@
+---
+title: "Assignment 1"
+subtitle: "Introduktion til Sundhedsdata · Worked on in lessons 2–3 · Presented lesson 4"
+author: "Name: ____________"
+date: last-modified
+lang: en
+format:
+  html:
+    toc: true
+    embed-resources: true
+execute:
+  echo: true
+  eval: true
+  warning: false
+  message: false
+---
+
+## The task
+
+In this assignment, you will be doing some basic data manipulation to set up a dataset for analysis. You will be using the `.dta` files in this repository, and your outputs will be a single merged dataset.
+
+## How to work on this file
+
+This file is a partly complete data management script. 
+
+Nearly everything you need is in the demo, `demo_part1.qmd`. Each step below
+names the section of the demo that covers it. 
+
+## Setup
+
+```{r}
+#| label: setup
+library(tidyverse)
+library(haven)
+
+raw_data_dir <- "data/raw/"
+processed_data_dir <- "data/processed/202609/"
+```
+
+## Tasks
+
+Outcome: a dataset with one row per person, for the year 2019. All Danish individuals ages 18 to 65 who are employed.
+
+Your final dataset must use exactly these column names, so that we can all run the same checks on each other's work in lesson 4:
+
+| Column | Type | What it holds |
+|---|---|---|
+| `pnr` | character | Person identifier |
+| `alder` | numeric | Age in years |
+| `koen` | factor | Sex, in human readable words |
+| `civ` | factor | Marital status, in human readable words |
+| `uddannelse` | factor | Highest achieved education level, in human readable words |
+| `indkomst` | numeric | Income level |
+| `gen_indkomst` | numeric | Average income of individuals with the same education level |
+| `forskel_indkomst` | numeric | Difference between the individual's income and the average for their education level |
+| `uddannelse_alder` | numeric | Age at which the education level was achieved |
+
+No other columns included.
+
+Also submit a data dictionary, which describes the contents of your dataset and how it was derived.
+
+### 1. Read in data and take a look at the structure of variables
+5 data sources: BEF, UDDA, IND, and the HFAUDD and PRE_SOCIO text files
+
+*Demo: "Reading a register file", "Looking at what you have", "Checking the granularity".*
+
+```{r}
+# TODO: read in bef2019.dta, uddf2024.dta, ind2019.dta and hfaudd_disced15.txt,
+# and look at the structure and contents of each one.
+
+```
+
+Freebie: pre_socio is a little complicated to parse, so it is provided here
+```{r}
+pre_socio <- read_delim(paste0(raw_data_dir,"pre_socio_klassifikation.txt"), delim = ";")
+
+pre_socio <- pre_socio %>%
+  select(pre_socio = START, arbejdsmarked = ANALYSE_KAT) %>%
+  mutate(pre_socio = as.character(pre_socio))
+```
+
+### 2. Managing categorical variables and variable types
+Three steps:
+  1. Select the columns you need
+  2. Filtering to the rows you want
+  3. Recoding categorical columns (where it's simple - leave out `hfaudd` for now until merging)
+
+*Demo: "Recoding a categorical variable", "Selecting rows and columns", "Classification keys".*
+
+```{r}
+# TODO: cut each dataset down to the columns and rows you need, and recode the
+# categorical variables that are straightforward to recode.
+
+```
+
+### 3. Merging all datasets together
+
+Watch the row count - make sure that you're not unexpectedly dropping data, or 
+creating missing values.
+
+*Demo: "Attaching the key to the data", "Joining two registers", "Choosing the type of join".*
+
+```{r}
+# TODO: merge your datasets into a single dataset called dt.
+
+```
+
+Check: depending on the type of merge you do, you may end up with some non-employed
+individuals in your sample. Double check that this is not the case:
+
+```{r}
+count(dt, arbejdsmarked)
+```
+
+```{r}
+# TODO: if the check above shows people who are not employed, drop them.
+
+```
+
+Note that you may need to change the dataset name or variable name to get the test to work.
+
+### 4. Create new variables
+
+Three of the columns in the table above do not exist in any of the register
+files — you have to build them.
+
+Hint: to create the "average income level at each education level" variable, you'll need to do a group_by() and aggregation.
+
+*Demo: "Creating a new column", "Aggregation and summarisation".*
+
+```{r}
+# TODO: create uddannelse_alder, gen_indkomst and forskel_indkomst.
+
+```
+
+### 5. Checks and selecting final columns
+Check whether the education levels have any missingness:
+
+```{r}
+count(dt, uddannelse)
+```
+
+If missingness exists, recode it to "Unknown".
+
+```{r}
+# TODO: recode missing education levels, if there are any.
+
+```
+
+```{r}
+# TODO: keep only the columns listed in the table at the top of this file, with
+# exactly those names, then look at the finished dataset with glimpse() and
+# summary().
+
+```
+
+### 6. Writing the dataset
+
+*Demo: "Classification keys" (for `write_csv`), "Documenting the data: the data dictionary".*
+
+```{r}
+# TODO: write your finished dataset to processed_data_dir.
+
+```
+
+Your data dictionary describes what is in the dataset: one row per
+column, with the column name, its type, the register it came from, and a
+description of how it was made. Include the population definition at the top
+of the dictionary as well. See the demo for the version we use in this
+course.
+
+```{r}
+# TODO: your data dictionary.
+
+```
+
+## Extra - challenges
+
+These are optional. If you solve one, you may be asked to present it in lesson 4.
+
+### Challenge 1: something is wrong with the education variable
+
+The education level in your dataset is not correct for everybody. For some of
+the people in your data, the education level you have assigned them is not one
+they actually held in 2019.
+
+Work out who is affected and why, fix it, and be ready to explain what went
+wrong. When you have found the problem, check whether any *other* column in
+your dataset is wrong for the same reason.
+
+```{r}
+
+```
+
+### Challenge 2: process more than one year
+
+`data/raw/` has BEF and IND for 2019 through 2024, not just 2019. Build the
+same analysis file for every year at once, without copying and pasting your
+code six times, and end up with a single dataset that has one row per person
+per year.
+
+*Demo: "Functions and loops".*
+
+```{r}
+
+```
+
+## Submission and presentation
+
+### What to submit
+
+Please submit your work as **two files**, to the Assignment 1 folder on
+itslearning:
+
+1. `assignment1_efternavn.qmd` — your completed script, with your surname in
+   the filename.
+2. `assignment1_efternavn.html` — the rendered output, which is how we can verify that your code runs
+
+If you wrote your data dictionary as a separate file, please also include this file in your upload.
+
+**Deadline: Tuesday 22 September, 9:00** — before lesson 4.
