@@ -68,6 +68,8 @@ Also submit a data dictionary, which describes the contents of your dataset and 
 # TODO: read in bef2019.dta, uddf2024.dta, ind2019.dta and hfaudd_disced15.txt,
 # and look at the structure and contents of each one.
 
+a <- 5 
+b <- 10
 ```
 
 Freebie: pre_socio is a little complicated to parse, so it is provided here

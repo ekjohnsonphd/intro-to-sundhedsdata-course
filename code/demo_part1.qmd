@@ -175,7 +175,7 @@ glimpse(bef)
 ```{r}
 #| label: inspect-head
 
-head(bef)
+head(bef, 20)
 ```
 
 `head()` shows the first rows of the table.
@@ -227,9 +227,11 @@ To make `koen` readable we convert it to a **factor** — R's type for categoric
 
 ```{r}
 #| label: recode-koen
+bef <- mutate(bef, koen...)
 
 bef <- bef |>
-  mutate(koen = factor(koen, levels = c(1, 2), labels = c("Male", "Female")))
+  mutate(koen = factor(koen, levels = c(1, 2), labels = c("Male", "Female"))) %>%
+  mutate(koen = ifelse(koen == 1, "Male", "Female"))
 
 # Writing to a column that already exists replaces it - the shape is unchanged
 count(bef, koen)
