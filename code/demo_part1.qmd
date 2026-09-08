@@ -141,6 +141,11 @@ processed_data_dir <- "data/processed/202609"
 
 Loading your filepaths at the top of the script means that a person reading your code can see all of the inputs and outputs of the analysis in one place. It also means that when you need to update a data source, you only need to update one line.
 
+While you work with the data, it's good to have your resources open and ready to access as you work. I recommend you open the following materials on your computer before you start:
+- [TIMES](https://www.dst.dk/da/Statistik/dokumentation/times)
+- [Grunddataoversigt](https://www.dst.dk/extranet/forskningvariabellister/Oversigt%20over%20registre.html)
+- The R cheatsheets (in `docs/cheatsheets`)
+
 ## Part 1: Data management
 
 ### Reading a register file
