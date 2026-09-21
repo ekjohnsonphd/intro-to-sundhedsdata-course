@@ -1,0 +1,52 @@
+---
+title: "Assignment 1: Peer code review checklist"
+subtitle: "Introduktion til Sundhedsdata · Lesson 4"
+author: "Emily Johnson, Kim Rose Olsen"
+date: last-modified
+lang: en
+format:
+  html:
+    embed-resources: true
+---
+
+You have a classmate's `assignment1.qmd` and `.html`. Use the checklist below to do a code 
+review of your peer's code. 
+
+## 1. Does the code run?
+
+Save the `.qmd` in `code/`, then render it with the course project open in
+Positron. The file paths are set relative to the project root, so it
+should run without any edits.
+
+- [ ] The file renders without errors
+- [ ] The rendered HTML matches the HTML they submitted
+- [ ] Each of the five sources is read in (BEF, UDDA, IND, HFAUDD, PRE_SOCIO)
+- [ ] The `count(dt, arbejdsmarked)` check comes back with only employed people
+
+## 2. Is the dataset correct?
+
+Compare against the reference answer.
+
+- [ ] The final dataset has the number of rows in the reference answer
+- [ ] The final dataset has the nine required columns, with those names, and no others
+- [ ] `koen`, `civ` and `uddannelse` are factors with readable labels, not codes
+- [ ] `uddannelse` has no `NA` (or `NA` has been recoded to `"Unknown"`)
+- [ ] The `.csv` is written to `processed_data_dir`
+
+## 3. Does it follow the practices from lesson 1?
+
+From the *good code* and *good documentation* boxes.
+
+- [ ] Packages and file paths are set at the top of the script and used throughout
+- [ ] Nothing is hard-coded that should be a path variable
+- [ ] Row counts are checked after the joins
+- [ ] Comments say *why* a step is done, not just what the code does
+- [ ] The data dictionary is there: one row per column with `column`, `type`, `source`, `description`, and the population definition at the top
+- [ ] The dictionary matches the dataset (same columns, same names)
+
+## 4. Discuss
+
+Two things to talk about with the author afterwards:
+
+1. Where did your solution differ from theirs?
+2. What would make their script easier for someone else to run?

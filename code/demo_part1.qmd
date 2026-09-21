@@ -227,11 +227,11 @@ To make `koen` readable we convert it to a **factor** — R's type for categoric
 
 ```{r}
 #| label: recode-koen
-bef <- mutate(bef, koen...)
+# bef <- mutate(bef, koen...)
 
 bef <- bef |>
-  mutate(koen = factor(koen, levels = c(1, 2), labels = c("Male", "Female"))) %>%
-  mutate(koen = ifelse(koen == 1, "Male", "Female"))
+  mutate(koen = factor(koen, levels = c(1, 2), labels = c("Male", "Female"))) #%>%
+  # mutate(koen = ifelse(koen == 1, "Male", "Female"))
 
 # Writing to a column that already exists replaces it - the shape is unchanged
 count(bef, koen)
@@ -286,7 +286,10 @@ Read the pipe as "then": take `bef`, *then* keep rows with ages 18 to 64, *then*
 ```{r}
 #| label: december-birthday
 
-bef <- bef |>
+# Can use either %>% or |>
+# or control (or command) + shift + m
+
+bef <- bef |> 
   mutate(december_birthday = ifelse(month(foed_dag) == 12, "December bday", "Other bday month"), source = "bef")
 
 # A new name in mutate() adds a column - here two, so bef goes from 9 to 11
@@ -369,6 +372,9 @@ pre_socio_categories <- pre_socio_categories |>
 ind <- ind |>
   left_join(pre_socio_categories, by = "pre_socio")
 
+# this is the same as above
+# ind <- left_join(ind, pre_socio_categories, by = "pre_socio")
+
 glimpse(ind)
 ```
 
@@ -411,6 +417,17 @@ sum(is.na(bef_ind$perindkialt_13))
 bef_ind |>
   filter(is.na(perindkialt_13)) |>
   count(alder < 18)
+
+# another call to troubleshoot but not define
+count(filter(bef_ind, is.na(perindkialt_13)), alder < 18)
+
+# # another call where youre redefining bef_ind
+# bef_ind <- filter(...)
+# count(bef_ind ...)
+
+bef_ind_troubleshooting <- bef_ind |> 
+  filter(is.na(perindkialt_13)) |>
+  count(alder < 18)
 ```
 
 40,786 of them are children, who do not appear in the income register. This is the join check from before with one more step: when a join produces `NA`s, find out *which* rows they landed on before deciding what to do about them. Here the missingness makes sense, so we keep the table as it is.
@@ -437,6 +454,14 @@ nrow(anti_join(bef, ind, by = "pnr"))
 ```
 
 The inner join returns 141,384 rows, the size of IND, and the anti join returns the 41,715 people it dropped. Join functions do not throw a warning when they drop rows, so it's always important to verify that you're not dropping data without realizing it.
+
+### Writing data
+To write out our bef_ind dataset:
+
+```{r}
+write_csv(bef_ind, paste0(processed_data_dir,"/bef_ind_merged.csv"))
+```
+
 
 ### Aggregation and summarisation
 
