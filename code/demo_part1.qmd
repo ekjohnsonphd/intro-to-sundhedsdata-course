@@ -694,3 +694,7 @@ Our dictionary is in `data/processed/202609/analysis_file_dictionary.csv`, and i
 | `description` | What it means, what its values are, and any decision taken in making it |
 
 As you collaborate with others (or use AI tools for analytical projects), the data dictionary becomes more important because it defines the structure of your data outside of your coding decisions.
+
+
+
+ADDING MATERIAL HERE TO COMMIT
