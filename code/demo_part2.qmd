@@ -1,0 +1,379 @@
+---
+title: "Coding demo, part 2"
+subtitle: "Introduktion til Sundhedsdata"
+author: "Emily Johnson"
+date: last-modified
+lang: en
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: false
+    code-tools: true
+    code-link: true
+    df-print: paged
+    embed-resources: true
+    highlight-style: github
+execute:
+  echo: true
+  eval: true
+  warning: false
+  message: false
+---
+
+
+We're going to use 2 datasets for this demo: 
+- Expbod data, which is aggregated outcomes
+- Healthcare expenditure synthetic data, which is individual-level data.
+
+Setup code to load libraries, set the data directory, and read data:
+```{r}
+library(tidyverse)
+library(scales)
+library(arrow)
+library(ggExtra)
+library(ggcorrplot)
+library(knitr)
+
+processed_data_dir <- "data/processed/202609/"
+
+expbod <- open_dataset(paste0(processed_data_dir, "expbod_teaching_parquet/")) |> collect()
+health_spend <- read_parquet(paste0(processed_data_dir,"SyntheticData_healthcareExp_100k_251029.parquet"))
+
+```
+
+Looking at data rows and columns:
+
+```{r}
+glimpse(health_spend)
+
+glimpse(expbod)
+```
+
+For later plots, we need a categorical variable that represents education levels. I've created that here.
+
+```{r}
+health_spend <- health_spend |> 
+    mutate(education = case_when(
+        education_long_higher == 1 ~ "Long higher",
+        education_medium_long == 1 ~ "Medium-long",
+        education_upper_secondary == 1 ~ "Upper secondary",
+        education_primary == 1 ~ "Primary",
+        education_other == 1 ~ "Other",
+        .default = "Missing"
+    )) |> 
+        mutate(sex = factor(sex, labels = c("Male","Female")))
+```
+
+## Univariate plots
+
+The first plot we'll make is a histogram.
+```{r}
+ggplot(health_spend) + 
+    geom_histogram(aes(x = age))
+```
+
+In a `ggplot` object, the first line sets which dataset you're using, and then the subsequent lines build
+*aesthetic layers* on top. In the most simple case, I specify that we're using `health_spend`, and I then 
+specify that we're building a histogram over age.
+
+I can then modify the plot, by adding labels and/or changing bin sizes:
+```{r}
+ggplot(health_spend) + 
+    geom_histogram(aes(x = age), binwidth = 5) + 
+    labs(x = "Age (years)", y = "Count of individuals", title = "Age distribution in health spend data")
+```
+
+I can also change the colors, transparency, and theme:
+```{r}
+ggplot(health_spend) + 
+    geom_histogram(aes(x = age), fill = "lightblue", color = "navy", alpha = 0.6) +
+    labs(x = "Age (years)", y = "Count of individuals", title = "Age distribution in health spend data") + 
+    theme_bw()
+```
+
+Or I could add another plot layer on top:
+```{r}
+ggplot(health_spend) +
+    geom_histogram(aes(x = age), binwidth = 5, fill = "lightblue", color = "navy", alpha = 0.6) +
+    geom_density(aes(x = age, y = after_stat(count) * 5), color = "red") +
+    labs(x = "Age (years)", y = "Count of individuals", title = "Age distribution in health spend data") +
+    theme_bw()
+```
+
+*Faceting* is a useful way to split a plot so you can do comparison. If I want to know age distributions split by sex, I can do so with facets:
+```{r}
+ggplot(health_spend) +
+    geom_histogram(aes(x = age, fill = sex), binwidth = 5, alpha = 0.6) +
+    geom_density(aes(x = age, y = after_stat(count) * 5), color = "red") +
+    labs(x = "Age (years)", y = "Count of individuals", title = "Age distribution in health spend data", fill = "Sex") +
+    facet_grid(.~sex) +
+    theme_bw()
+```
+
+Another way to show this data could be a boxplot or violin plot:
+
+```{r}
+ggplot(health_spend) +
+    geom_boxplot(aes(x = sex, y = age, color = age)) +
+    labs(y = "Age (years)", x = "Sex", title = "Age distribution in health spend data")
+```
+
+
+```{r}
+ggplot(health_spend) +
+    geom_violin(aes(x = sex, y = age, fill = sex)) +
+    geom_boxplot(aes(x = sex, y = age)) +
+    labs(y = "Age (years)", x = "Sex", title = "Age distribution in health spend data")
+```
+
+Histograms and boxplots show the spread of continuous data. We can use bar charts to represent categorical data:
+
+```{r}
+ggplot(health_spend) + 
+    geom_bar(aes(x = education)) + 
+    labs(x = "Education level", y = "Count of individuals", title = "Educational attainment distribution")
+```
+
+Note that for this bar chart we might want the education categories to be ordered by education length, instead of alphabetically
+which is GGPlot's default. To do this we need to modify the factor variable:
+
+```{r}
+health_spend <- health_spend |> 
+    mutate(education = factor(education, levels = c("Primary","Upper secondary","Medium-long","Long higher","Other","Missing")))
+
+ggplot(health_spend) + 
+    geom_bar(aes(x = education)) +
+    labs(x = "Education level", y = "Count of individuals", title = "Educational attainment distribution")
+
+```
+
+If we add a second categorical variable with `fill`, the bars are split into groups. The `position` argument controls how the groups are arranged. By default they are stacked on top of each other:
+
+```{r}
+ggplot(health_spend) +
+    geom_bar(aes(x = education, fill = sex), position = "stack") +
+    labs(x = "Education level", y = "Count of individuals", fill = "Sex", title = "Educational attainment by sex")
+```
+
+`position = "dodge"` puts the groups side by side, which makes it easier to compare the groups within each education level:
+
+```{r}
+ggplot(health_spend) +
+    geom_bar(aes(x = education, fill = sex), position = "dodge") +
+    labs(x = "Education level", y = "Count of individuals", fill = "Sex", title = "Educational attainment by sex")
+```
+
+`position = "fill"` stretches every bar to 100%, so it shows shares instead of counts. This makes it easy to compare the sex distribution across education levels, but hides how many people are in each level:
+
+```{r}
+ggplot(health_spend) +
+    geom_bar(aes(x = education, fill = sex), position = "fill") +
+    scale_y_continuous(labels = scales::label_percent()) +
+    labs(x = "Education level", y = "Share of individuals", fill = "Sex", title = "Educational attainment by sex")
+```
+
+`geom_bar()` summarizes data and produces counts on its own. If we have already aggregated the data, we use `geom_col()` instead and specify both the x and y axis values. Here, we count how many ICD-10 chapters each person has a diagnosis in (multimorbidity), and then how many people fall into each number of chapters. First we pivot the ICD-10 chapter indicators to long format, with one row per person per chapter, and sum the indicators within each person:
+
+```{r}
+icd_long <- health_spend |>
+    mutate(id = row_number()) |>
+    select(id, starts_with("icd10_chapter")) |>
+    pivot_longer(-id, names_to = "chapter", names_prefix = "icd10_chapter_", values_to = "diagnosed") |>
+    group_by(id) |>
+    mutate(n_chapters = sum(diagnosed),
+           n_chapters_cat = ifelse(n_chapters >= 9, "9+", as.character(n_chapters))) |>
+    ungroup() |>
+    filter(n_chapters > 0)
+```
+
+Each person now has one row per chapter, so we keep one row per person with `distinct()` before counting:
+
+```{r}
+chapter_counts <- icd_long |>
+    distinct(id, n_chapters_cat) |>
+    count(n_chapters_cat)
+
+ggplot(chapter_counts) +
+    geom_col(aes(x = n_chapters_cat, y = n)) +
+    labs(x = "Number of ICD-10 chapters", y = "Count of individuals", title = "Multimorbidity in health spend data") +
+    theme_bw()
+```
+
+We can also look at multimorbidity within each ICD-10 chapter. Note that a person with diagnoses in 3 chapters is counted once in each of those 3 chapters, so the bars can't be added up to a number of people. Instead, we show the share of people with a diagnosis in each chapter by how many chapters they have diagnoses in, using `position = "fill"`:
+
+```{r}
+icd_chapters <- icd_long |>
+    filter(diagnosed == 1) |>
+    count(chapter, n_chapters_cat)
+
+ggplot(icd_chapters) +
+    geom_col(aes(x = toupper(chapter), y = n, fill = n_chapters_cat), position = "fill") +
+    scale_y_continuous(labels = scales::label_percent()) +
+    labs(x = "ICD-10 chapter", y = "Share of individuals with a diagnosis in chapter", fill = "Number of chapters", title = "Multimorbidity by ICD-10 chapter") +
+    theme_bw()
+```
+
+## Multivariate plots
+
+Thus far we've shown distributions of one variable at a time. Often, you want to see the relationship between variables as part of EDA.
+
+First, let's make a scatter plot using the ExpBoD data. Now that you know the basic structure of a ggplot, there are some additional details and 
+flourishes added to this plot.
+```{r}
+expbod_bivariate <- expbod |> 
+    filter(unit != "share")
+
+ggplot(expbod_bivariate) + 
+    geom_abline(aes(intercept = 0, slope = 1)) +
+    geom_point(aes(x = value_exposed, y = value_control, color = variable, alpha = index)) + 
+    scale_x_continuous(labels = scales::label_currency(prefix = "€")) +
+    scale_y_continuous(labels = scales::label_currency(prefix = "€")) + 
+    labs(x = "Value (exposed population)", y = "Value (control population)", color = "Variable", alpha = "Years to diagnosis") +
+    theme_bw()
+```
+
+This plot is pretty hard to read, and the data is highly concentrated. Let's make a couple adjustments - first, let's transform
+the data scales to logarithmic instead of linear, then let's also separate out categories of variables
+
+
+```{r}
+expbod_bivariate <- expbod_bivariate |> 
+    mutate(variable_group = ifelse(str_detect(variable, "per"), "Personal finance", "Household finance"))
+
+ggplot(expbod_bivariate) + 
+    geom_abline(aes(intercept = 0, slope = 1)) +
+    geom_point(aes(x = value_exposed, y = value_control, color = variable, alpha = index)) + 
+    scale_x_log10(labels = scales::label_currency(prefix = "€")) +
+    scale_y_log10(labels = scales::label_currency(prefix = "€")) + 
+    labs(x = "Value (exposed population)", y = "Value (control population)", color = "Variable", alpha = "Years to diagnosis") +
+    facet_wrap(.~variable_group, scales = "free") +
+    theme_bw()
+```
+
+Note that by using `scales="free"` in the facets, you let each panel have it's own scale. This can be useful if one panel is still unreadable, but
+be aware that it can also be misleading.
+
+This plot is better, but it's still very hard to see whether some variables are more similar than others. In this case, we might want to separate each variable to its own panel:
+
+```{r}
+ggplot(expbod_bivariate) + 
+    geom_abline(aes(intercept = 0, slope = 1)) +
+    geom_point(aes(x = value_exposed, y = value_control, color = variable, alpha = index)) + 
+    scale_x_log10(labels = scales::label_currency(prefix = "€")) +
+    scale_y_log10(labels = scales::label_currency(prefix = "€")) + 
+    labs(x = "Value (exposed population)", y = "Value (control population)", color = "Variable", alpha = "Years to diagnosis") +
+    facet_wrap(.~variable, scales = "free") +
+    theme_bw()
+```
+
+Clearly the income variables have a lot of deviation. Let's look at one more closely:
+
+```{r}
+ggplot(filter(expbod_bivariate, variable == "hh_ind")) +
+    geom_density_2d(aes(x = value_exposed, y = value_control), contour_var = "ndensity") +
+    geom_abline(aes(intercept = 0, slope = 1)) +
+    scale_x_log10(labels = scales::label_currency(prefix = "€")) +
+    scale_y_log10(labels = scales::label_currency(prefix = "€")) +
+    labs(x = "Value (exposed population)", y = "Value (control population)", fill = "Density", title = "Household income distribution, exposed v. control") +
+    theme_bw()
+```
+
+We can also show the distribution of each variable along the sides of a scatter plot. `ggMarginal()` from the `ggExtra` package takes a finished ggplot and adds marginal histograms:
+
+```{r}
+hh_ind_plot <- ggplot(filter(expbod_bivariate, variable == "hh_ind")) +
+    geom_point(aes(x = value_exposed, y = value_control), alpha = 0.5) +
+    geom_abline(aes(intercept = 0, slope = 1)) +
+    scale_x_continuous(labels = scales::label_currency(prefix = "€")) +
+    scale_y_continuous(labels = scales::label_currency(prefix = "€")) +
+    labs(x = "Value (exposed population)", y = "Value (control population)", title = "Household income distribution, exposed v. control") +
+    theme_bw()
+
+ggMarginal(hh_ind_plot, type = "histogram")
+```
+
+## Plots over time
+
+The ExpBoD data follows people from 5 years before to 9 years after diagnosis (`index`). Line plots show how outcomes change over that time. Here, personal income for women:
+
+```{r}
+expbod_income <- expbod |>
+    filter(variable == "per_ind", stratifier == "overall", sex == "Female") |>
+    pivot_longer(c(value_exposed, value_control), names_to = "population", names_prefix = "value_", values_to = "value") |> 
+    mutate(population = str_to_title(population), disease = str_to_title(disease))
+
+ggplot(expbod_income) +
+    geom_vline(xintercept = 0, linetype = "dashed") +
+    geom_line(aes(x = index, y = value, color = population)) +
+    scale_y_continuous(labels = scales::label_currency(prefix = "€")) +
+    labs(x = "Years since diagnosis", y = "Personal income", color = "Population", title = "Personal income before and after diagnosis, women") +
+    facet_wrap(.~disease) +
+    theme_bw()
+```
+
+Instead of plotting both populations, we can plot the difference between them (`ace`) with its confidence interval as a ribbon:
+
+```{r}
+ggplot(filter(expbod, variable == "per_ind", stratifier == "overall", sex == "Female")) +
+    geom_hline(yintercept = 0) +
+    geom_vline(xintercept = 0, linetype = "dashed") +
+    geom_ribbon(aes(x = index, ymin = lower, ymax = upper), alpha = 0.3) +
+    geom_line(aes(x = index, y = ace)) +
+    scale_y_continuous(labels = scales::label_currency(prefix = "€")) +
+    labs(x = "Years since diagnosis", y = "Difference in personal income (exposed - control)", title = "Effect of diagnosis on personal income, women") +
+    facet_wrap(.~disease) +
+    theme_bw()
+```
+
+## Heatmaps
+
+A heatmap shows a value across two categorical (or discrete) dimensions using color. Here, the relative difference in employment by disease and year:
+
+```{r}
+ggplot(filter(expbod, variable == "pre_socio_employed", stratifier == "overall", sex == "Female")) +
+    geom_tile(aes(x = index, y = disease, fill = pct)) +
+    scale_fill_gradient2(labels = scales::label_percent()) +
+    labs(x = "Years since diagnosis", y = "Disease", fill = "Relative difference", title = "Employment, exposed vs control, women") +
+    theme_bw()
+```
+
+A correlation plot is a special kind of heatmap, showing the correlation between every pair of variables. `ggcorrplot()` takes a correlation matrix, which we make with `cor()`:
+
+```{r}
+health_spend_cor <- health_spend |>
+    select(age, personal_income, personal_wealth, time_to_death, education_primary:education_missing) |>
+    cor(use = "complete.obs")
+
+ggcorrplot(health_spend_cor, type = "lower", lab = TRUE, lab_size = 3)
+```
+
+## Tables
+
+Most papers start with a "Table 1", which describes the study population. We build it with `group_by()` and `summarize()`, then reshape it so that each characteristic is a row and each group is a column:
+
+```{r}
+table1 <- health_spend |>
+    group_by(sex) |>
+    summarize(
+        "N" = n(),
+        "Age, mean" = mean(age, na.rm = TRUE),
+        "Personal income, median" = median(personal_income),
+        "Personal wealth, median" = median(personal_wealth),
+        "Primary education, %" = mean(education == "Primary") * 100,
+        "Upper secondary education, %" = mean(education == "Upper secondary") * 100,
+        "Medium-long education, %" = mean(education == "Medium-long") * 100,
+        "Long higher education, %" = mean(education == "Long higher") * 100
+    ) |>
+    pivot_longer(-sex, names_to = "Characteristic") |>
+    pivot_wider(names_from = sex, values_from = value)
+
+table1
+```
+
+`kable()` from the `knitr` package turns the table into a formatted table in the rendered document. `digits` sets the number of decimals:
+
+```{r}
+kable(table1, digits = 1, caption = "Characteristics of individuals by sex")
+```

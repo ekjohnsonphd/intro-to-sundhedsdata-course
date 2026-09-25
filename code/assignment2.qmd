@@ -1,0 +1,210 @@
+---
+title: "Assignment 2"
+subtitle: "Introduktion til Sundhedsdata · Worked on in lessons 5–7 · Presented lesson 8"
+author: "Name: ____________"
+date: last-modified
+lang: en
+format:
+  html:
+    toc: true
+    embed-resources: true
+execute:
+  echo: true
+  eval: true
+  message: false
+---
+
+## How to work on this file
+
+This file is a partly complete analysis script. Each task asks for one or more plots, and names the section of the demo, `demo_part2.qmd`, that covers it. Nearly everything you need is in the demo.
+
+Work through the tasks in order, since later tasks reuse data created in earlier ones. Render the file often to check that your code runs successfully.
+
+Every plot should be presentable. Give each a title, readable axis labels and legend titles, and choose colors that make the comparison clear.
+
+## Setup
+
+```{r}
+#| label: setup
+library(tidyverse)
+library(arrow)
+library(ggExtra)
+library(ggcorrplot)
+library(knitr)
+
+processed_data_dir <- "data/processed/202609/"
+
+expbod <- open_dataset(paste0(processed_data_dir, "expbod_teaching_parquet/")) |> collect()
+health_spend <- read_parquet(paste0(processed_data_dir,"SyntheticData_healthcareExp_100k_251029.parquet"))
+
+health_spend <- health_spend |> 
+    mutate(education = case_when(
+        education_long_higher == 1 ~ "Long higher",
+        education_medium_long == 1 ~ "Medium-long",
+        education_upper_secondary == 1 ~ "Upper secondary",
+        education_primary == 1 ~ "Primary",
+        education_other == 1 ~ "Other",
+        .default = "Missing"
+    )) |> 
+    mutate(sex = factor(sex, labels = c("Male","Female")))
+
+health_spend <- health_spend |> 
+    mutate(education = factor(education, levels = c("Primary","Upper secondary","Medium-long","Long higher","Other","Missing")))
+```
+
+
+### 1. Univariate plots
+
+**Task 1:** plot the distribution of wealth and income in the data, stratified by sex and education
+
+Note that you may want to consider using a logarithmic scale, but first check to see if this switch would remove some rows of data.
+
+*Demo: "Univariate plots".*
+
+```{r}
+# TODO: plot the distribution of wealth and income, stratified by sex and education.
+
+```
+
+
+**Task 2:** plot the distribution of healthcare costs across rows
+
+*Demo: "Univariate plots" (faceting).*
+
+```{r}
+# TODO: pivot the cost columns to long format, and plot the distribution of each type of spending.
+
+```
+
+::: {.callout-tip title="Checkpoint"}
+After pivoting, your data should have one row per person per type of spending: 800,000 rows (100,000 people × 8 types of spending), or 600,000 rows if you drop the two psychiatric types.
+:::
+
+Are there types of spending that have no non-zero cost amounts? Is there a way to remove these from the visualization?
+
+Extra: see if you can aggregate and plot the distribution of total spending
+```{r}
+# TODO: aggregate spending to one row per person, and plot the distribution of total spending.
+
+```
+
+::: {.callout-tip title="Checkpoint"}
+Your aggregated data should have one row per person: 100,000 rows. 101 people have zero total spending.
+:::
+
+**Task 3:** plot the frequency of ICD-10 chapters by education level
+
+*Demo: "Univariate plots" (bar charts).*
+
+```{r}
+# TODO: pivot the ICD-10 chapter columns to long format, and plot the frequency of each chapter by education level.
+
+```
+
+::: {.callout-tip title="Checkpoint"}
+After pivoting and keeping only diagnoses, your data should have one row per person per chapter they have a diagnosis in: 109,844 rows, covering 25 chapters and 51,885 people.
+:::
+
+Note that a person with diagnoses in several chapters appears in several bars.
+
+### 2. Bivariate plots
+
+**Task 4:** plot inpatient spending against prescription drug spending
+
+*Demo: "Multivariate plots".*
+
+```{r}
+# TODO: plot inpatient spending against prescription drug spending.
+
+```
+
+Most people have no inpatient spending. How many people have both inpatient and prescription drug spending above zero? Plot only these people, on a logarithmic scale:
+
+```{r}
+# TODO: keep only people with both types of spending above zero, count them, and plot them on a logarithmic scale.
+
+```
+
+**Task 5:** plot total health spending against income, with the distribution of each variable on the sides of the plot
+
+*Demo: "Multivariate plots" (marginal distributions).*
+
+```{r}
+# TODO: join total spending onto health_spend, and plot it against income with the distribution of each variable on the sides.
+
+```
+
+::: {.callout-tip title="Checkpoint"}
+After joining total spending onto `health_spend`, it should still have 100,000 rows. If it has more, the join is duplicating people.
+:::
+
+**Task 6:** make a correlation plot of age, income, wealth and the spending variables
+
+*Demo: "Heatmaps" (correlation plots).*
+
+```{r}
+# TODO: make a correlation matrix with cor(), and plot it with ggcorrplot().
+
+```
+
+::: {.callout-tip title="Checkpoint"}
+Your correlation matrix should have one row and one column per variable: 10 × 10.
+:::
+
+Hint: the psychiatric variables are all zero, so leave them out of the correlation plot.
+
+Do the relationships between these variables make sense to you? Give an explanation here to 
+describe which correlations can be explained and which are surprising.
+
+*YOUR DESCRIPTION HERE*
+
+
+**Task 7:** plot the distribution of total spending by ICD-10 chapter, and then average spending by ICD-10 chapter and type of spending
+
+*Demo: "Univariate plots" (boxplots, bar charts with `geom_col()`).*
+
+```{r}
+# TODO: plot the distribution of total spending by ICD-10 chapter, then calculate and plot average spending by chapter and type of spending.
+
+```
+
+::: {.callout-tip title="Checkpoint"}
+Joining total spending onto the ICD-10 data should not change the number of rows: still 109,844. The averages by chapter and type of spending should have one row per chapter per type: 200 rows (25 chapters × 8 types of spending), or 150 rows if you drop the two psychiatric types.
+:::
+
+### 3. Tables
+
+**Task 8:** make a Table 1 describing the individuals in the data by education level
+
+*Demo: "Tables".*
+
+```{r}
+# TODO: make a Table 1 describing the individuals in the data by education level.
+
+```
+
+::: {.callout-tip title="Checkpoint"}
+Your table should have one row per characteristic and one column per education level (6), and the N row should sum to 100,000.
+:::
+
+## Open-ended hypothesis testing
+The other tasks in this assignment have been specific about what you should produce. However, there are many 
+relationships in both datasets which have not been explored yet. Use the demo, the other assignment tasks, and 
+the online resources to build **2 plots** which examine other questions you may have in either dataset.
+
+```{r}
+
+```
+
+
+
+## Submission and presentation
+
+### What to submit
+
+Please submit your work as **two files**, to the Assignment 2 folder on itslearning:
+
+1. `assignment2_efternavn.qmd` — your completed script, with your surname in the filename.
+2. `assignment2_efternavn.html` — the rendered output, which is how we can verify that your code runs.
+
+**Deadline: TODO** — before lesson 8.
