@@ -1,0 +1,140 @@
+/*-- scss:defaults --*/
+
+// SDU / DaCHE palette (from the SDU PowerPoint theme)
+$sdu-red: #D05A57;
+$sdu-green: #789D4A;
+$sdu-orange: #E07E3C;
+$sdu-brown: #7A6040;
+$sdu-sand: #DDCBA4;
+
+$font-family-sans-serif: Arial, "Helvetica Neue", Helvetica, sans-serif;
+$presentation-font-size-root: 30px;
+$body-color: #1a1a1a;
+$link-color: #B75B1D;
+
+$presentation-heading-font: $font-family-sans-serif;
+$presentation-heading-color: #000000;
+$presentation-heading-font-weight: 700;
+$presentation-h1-font-size: 2em;
+$presentation-h2-font-size: 1.3em;
+$presentation-title-slide-text-align: left;
+
+/*-- scss:rules --*/
+
+.reveal h2 {
+  margin-bottom: 0.6em;
+}
+
+// Title slide
+.reveal .quarto-title-block .title {
+  font-size: 1.9em;
+  margin-bottom: 0.3em;
+}
+
+.reveal .quarto-title-block .subtitle {
+  color: $sdu-red;
+  font-size: 1.1em;
+  margin-bottom: 1.6em;
+}
+
+.reveal .quarto-title-block .quarto-title-author-name,
+.reveal .quarto-title-block .quarto-title-affiliation,
+.reveal .quarto-title-block .date {
+  font-size: 0.75em;
+}
+
+// Lighter nested bullets
+.reveal ul ul {
+  font-size: 0.88em;
+}
+
+.reveal li {
+  margin-bottom: 0.15em;
+}
+
+// Source line under a figure
+.reveal .source {
+  font-size: 0.5em;
+  color: #555555;
+  margin-top: 0.4em;
+}
+
+// Text colours used in the slide content
+.reveal .c-red { color: $sdu-red; }
+.reveal .c-green { color: $sdu-green; }
+.reveal .c-orange { color: $sdu-orange; }
+
+// Column headings (e.g. Exposure / Outcomes)
+.reveal .col-head {
+  font-weight: 700;
+  font-size: 1.05em;
+  color: #000000;
+  border-bottom: 2px solid $sdu-sand;
+  padding-bottom: 0.15em;
+  margin-bottom: 0.4em;
+}
+
+// Info cards (matching variables)
+.reveal .card {
+  background: lighten($sdu-sand, 15%);
+  border-radius: 6px;
+  padding: 0.3em 0.8em;
+  margin-bottom: 0.35em;
+  font-size: 0.7em;
+}
+
+.reveal .card .card-head {
+  font-weight: 700;
+  color: $sdu-orange;
+  margin-bottom: 0.15em;
+}
+
+.reveal .card ul {
+  margin: 0;
+  padding-left: 1.1em;
+}
+
+.reveal .label {
+  font-weight: 700;
+  font-size: 0.8em;
+  margin-bottom: 0.4em;
+}
+
+// Tables
+.reveal table {
+  font-size: 0.7em;
+}
+
+.reveal table th {
+  background: lighten($sdu-sand, 10%);
+  border-bottom: 2px solid $sdu-brown;
+}
+
+.reveal table td {
+  vertical-align: top;
+  padding: 0.5em 0.6em;
+}
+
+// Folder trees
+.reveal .tree {
+  font-family: Menlo, Consolas, monospace;
+  font-size: 0.7em;
+}
+
+.reveal .tree ul {
+  list-style: none;
+  margin-left: 0;
+  padding-left: 1.2em;
+}
+
+.reveal .tree > ul {
+  padding-left: 0;
+}
+
+.reveal .tree li {
+  margin-bottom: 0.05em;
+}
+
+.reveal .slide-logo {
+  max-height: 2.4em !important;
+}
