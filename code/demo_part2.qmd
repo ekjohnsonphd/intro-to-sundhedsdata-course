@@ -36,7 +36,7 @@ library(ggExtra)
 library(ggcorrplot)
 library(knitr)
 
-processed_data_dir <- "data/processed/202609/"
+processed_data_dir <- "data/processed/"
 
 expbod <- open_dataset(paste0(processed_data_dir, "expbod_teaching_parquet/")) |> collect()
 health_spend <- read_parquet(paste0(processed_data_dir,"SyntheticData_healthcareExp_100k_251029.parquet"))
@@ -81,7 +81,7 @@ specify that we're building a histogram over age.
 I can then modify the plot, by adding labels and/or changing bin sizes:
 ```{r}
 ggplot(health_spend) + 
-    geom_histogram(aes(x = age), binwidth = 5) + 
+    geom_histogram(aes(x = age), binwidth = 20) + 
     labs(x = "Age (years)", y = "Count of individuals", title = "Age distribution in health spend data")
 ```
 
@@ -108,7 +108,7 @@ ggplot(health_spend) +
     geom_histogram(aes(x = age, fill = sex), binwidth = 5, alpha = 0.6) +
     geom_density(aes(x = age, y = after_stat(count) * 5), color = "red") +
     labs(x = "Age (years)", y = "Count of individuals", title = "Age distribution in health spend data", fill = "Sex") +
-    facet_grid(.~sex) +
+    facet_grid(education~sex) +
     theme_bw()
 ```
 
@@ -116,7 +116,7 @@ Another way to show this data could be a boxplot or violin plot:
 
 ```{r}
 ggplot(health_spend) +
-    geom_boxplot(aes(x = sex, y = age, color = age)) +
+    geom_boxplot(aes(x = sex, y = age, color = sex)) +
     labs(y = "Age (years)", x = "Sex", title = "Age distribution in health spend data")
 ```
 

@@ -356,7 +356,7 @@ Now let's try joining our categories to the income data. A `left_join` keeps all
 #| label: join-type-error
 #| error: true
 
-left_join(ind, pre_socio_categories, by = "pre_socio")
+#left_join(ind, pre_socio_categories, by = "pre_socio")
 ```
 
 That fails because the codes are stored as text in one table and as numbers in the other. This is a very common error during a join.
@@ -613,7 +613,7 @@ file.size(paste0(processed_data_dir,"/expbod_teaching.csv")) / 1e6
 # Get the file size in megabits of the parquet data
 # For the parquet files - sum over partitions
 print("Data size on disc as partitioned parquet files:")
-sum(file.size(list.files(paste0(processed_data_dir, "expbod_teaching_parquet/"), 
+sum(file.size(list.files(paste0(processed_data_dir, "/expbod_teaching_parquet/"), 
   recursive = TRUE, full.names = TRUE))) / 1e6
 ```
 
@@ -656,6 +656,10 @@ Arrow is efficient because of something called "lazy evaluation". When you read 
 
 ```{r}
 data_parquet <- open_dataset(paste0(processed_data_dir,"/expbod_teaching_parquet/"))
+
+synthetic_data <- read_parquet(paste0(processed_data_dir,"/SyntheticData_healthcareExp_100k_251029.parquet"))
+
+write_parquet(synthetic_data, "FILE NAME HERE")
 
 # The data is still on disc. However, you can see some metadata about the data:
 schema(data_parquet)

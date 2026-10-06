@@ -52,7 +52,6 @@ health_spend <- health_spend |>
     mutate(education = factor(education, levels = c("Primary","Upper secondary","Medium-long","Long higher","Other","Missing")))
 ```
 
-
 ### 1. Univariate plots
 
 **Task 1:** plot the distribution of wealth and income in the data, stratified by sex and education
@@ -63,9 +62,16 @@ Note that you may want to consider using a logarithmic scale, but first check to
 
 ```{r}
 # TODO: plot the distribution of wealth and income, stratified by sex and education.
+glimpse(health_spend)
+
+ggplot(health_spend) + 
+    geom_density(aes(x = personal_wealth, color = education)) +
+    facet_grid(.~sex) +
+    labs(x = "Wealth", color = "Education") + 
+    scale_x_continuous(labels = scales::label_currency(suffix="kr", prefix=""))
+
 
 ```
-
 
 **Task 2:** plot the distribution of healthcare costs across rows
 
@@ -73,6 +79,22 @@ Note that you may want to consider using a logarithmic scale, but first check to
 
 ```{r}
 # TODO: pivot the cost columns to long format, and plot the distribution of each type of spending.
+
+ggplot(health_spend) + 
+geom_density(aes(x = cost_gp_level))
+
+ggplot(health_spend) + 
+geom_density(aes(x = cost_somatic_inpatient_level))
+
+pivoted_health_spend <- health_spend %>%
+    pivot_longer(names_to = "care_setting", values_to = "costs",
+                cols = c("cost_gp_level","cost_somatic_inpatient_level"))
+
+ggplot(pivoted_health_spend) + 
+geom_boxplot(aes(x = costs, color = care_setting)) + 
+facet_grid(.~care_setting)
+
+
 
 ```
 
@@ -83,6 +105,7 @@ After pivoting, your data should have one row per person per type of spending: 8
 Are there types of spending that have no non-zero cost amounts? Is there a way to remove these from the visualization?
 
 Extra: see if you can aggregate and plot the distribution of total spending
+
 ```{r}
 # TODO: aggregate spending to one row per person, and plot the distribution of total spending.
 
@@ -153,11 +176,9 @@ Your correlation matrix should have one row and one column per variable: 10 × 1
 
 Hint: the psychiatric variables are all zero, so leave them out of the correlation plot.
 
-Do the relationships between these variables make sense to you? Give an explanation here to 
-describe which correlations can be explained and which are surprising.
+Do the relationships between these variables make sense to you? Give an explanation here to describe which correlations can be explained and which are surprising.
 
 *YOUR DESCRIPTION HERE*
-
 
 **Task 7:** plot the distribution of total spending by ICD-10 chapter, and then average spending by ICD-10 chapter and type of spending
 
@@ -188,15 +209,12 @@ Your table should have one row per characteristic and one column per education l
 :::
 
 ## Open-ended hypothesis testing
-The other tasks in this assignment have been specific about what you should produce. However, there are many 
-relationships in both datasets which have not been explored yet. Use the demo, the other assignment tasks, and 
-the online resources to build **2 plots** which examine other questions you may have in either dataset.
+
+The other tasks in this assignment have been specific about what you should produce. However, there are many relationships in both datasets which have not been explored yet. Use the demo, the other assignment tasks, and the online resources to build **2 plots** which examine other questions you may have in either dataset.
 
 ```{r}
 
 ```
-
-
 
 ## Submission and presentation
 
@@ -204,7 +222,7 @@ the online resources to build **2 plots** which examine other questions you may 
 
 Please submit your work as **two files**, to the Assignment 2 folder on itslearning:
 
-1. `assignment2_efternavn.qmd` — your completed script, with your surname in the filename.
-2. `assignment2_efternavn.html` — the rendered output, which is how we can verify that your code runs.
+1.  `assignment2_efternavn.qmd` — your completed script, with your surname in the filename.
+2.  `assignment2_efternavn.html` — the rendered output, which is how we can verify that your code runs.
 
 **Deadline: TODO** — before lesson 8.
