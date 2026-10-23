@@ -91,7 +91,7 @@ pivoted_health_spend <- health_spend %>%
                 cols = c("cost_gp_level","cost_somatic_inpatient_level"))
 
 ggplot(pivoted_health_spend) + 
-geom_boxplot(aes(x = costs, color = care_setting)) + 
+geom_density(aes(x = costs, color = care_setting)) + 
 facet_grid(.~care_setting)
 
 
